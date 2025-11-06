@@ -191,4 +191,8 @@
   body {
     @apply bg-background text-foreground overflow-x-hidden min-h-screen;
   }
+
+  button {
+    @apply cursor-pointer transition-all duration-300 ease-out;
+  }
 }

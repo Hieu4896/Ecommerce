@@ -13,7 +13,7 @@ import { Button } from "@src/components/ui/button";
  */
 export const ProductItem = ({ product }: { product: Product }) => {
   return (
-    <Card className="w-full hover:shadow-md transition-shadow">
+    <Card className="w-full border-border hover:border-accent transition-colors duration-300 ease-out">
       <CardHeader className="pb-2">
         <div className="flex gap-4">
           {product.thumbnail && (
@@ -24,7 +24,7 @@ export const ProductItem = ({ product }: { product: Product }) => {
             />
           )}
           <div className="flex-1">
-            <CardTitle className="text-lg line-clamp-1">
+            <CardTitle className="text-lg text-white line-clamp-1">
               {product.title}
             </CardTitle>
             <CardDescription className="line-clamp-2 mt-1">
@@ -47,8 +47,10 @@ export const ProductItem = ({ product }: { product: Product }) => {
           </div>
           {product.rating && (
             <div className="flex items-center gap-1">
-              <span className="text-sm text-muted-foreground">Rating:</span>
-              <span className="text-sm font-medium">{product.rating}</span>
+              <span className="text-sm text-primary-foreground">Rating:</span>
+              <span className="text-sm font-medium text-accent">
+                {product.rating}
+              </span>
             </div>
           )}
         </div>
