@@ -1,0 +1,198 @@
+@import "tailwindcss";
+
+:root {
+  /* === MÀU SẮC CHÍNH === */
+  --background: #ffffff;
+  --foreground: #171717;
+
+  /* Màu nền và văn bản phụ */
+  --muted: #f3f4f6;
+  --muted-foreground: #6b7280;
+
+  /* Màu viền */
+  --border: #e5e7eb;
+  --input: #ffffff;
+  --ring: #ff6b6b;
+
+  /* Màu chính  */
+  --primary: #ff6b6b;
+  --primary-foreground: #ffffff;
+
+  /* Màu phụ */
+  --secondary: #60a5fa;
+  --secondary-foreground: #ffffff;
+
+  /* Màu nổi bật */
+  --accent: #fbbf24;
+  --accent-foreground: #000000;
+
+  /* Màu thành công */
+  --success: #10b981;
+  --success-foreground: #ffffff;
+
+  /* Màu cảnh báo */
+  --warning: #f59e0b;
+  --warning-foreground: #ffffff;
+
+  /* Màu lỗi */
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+
+  /* Màu sản phẩm */
+  --product-bg: #fefefe;
+  --product-border: #f3f4f6;
+  --product-badge: #ff6b6b;
+  --product-price: #ef4444;
+  --product-discount: #10b981;
+
+  /* Màu giỏ hàng */
+  --cart-bg: #f9fafb;
+  --cart-item-border: #e5e7eb;
+  --cart-total-bg: #f3f4f6;
+
+  /* Màu thanh toán */
+  --checkout-bg: #ffffff;
+  --checkout-step-active: #ff6b6b;
+  --checkout-step-inactive: #d1d5db;
+  --checkout-payment-selected: #eff6ff;
+
+  /* === Font chữ === */
+  --font-geist-sans: "Geist", sans-serif;
+  --font-geist-mono: "Geist Mono", monospace;
+
+  /* === KHOẢNG CÁCH === */
+  --spacing-xs: 0.25rem; /* 4px */
+  --spacing-sm: 0.5rem; /* 8px */
+  --spacing-md: 1rem; /* 16px */
+  --spacing-lg: 1.5rem; /* 24px */
+  --spacing-xl: 2rem; /* 32px */
+  --spacing-2xl: 3rem; /* 48px */
+  --spacing-3xl: 4rem; /* 64px */
+
+  /* === BO TRÒN === */
+  --radius-sm: 0.125rem; /* 2px */
+  --radius-md: 0.375rem; /* 6px */
+  --radius-lg: 0.5rem; /* 8px */
+  --radius-xl: 0.75rem; /* 12px */
+  --radius-2xl: 1rem; /* 16px */
+  --radius-full: 9999px;
+
+  /* === ĐỔ BÓNG === */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg:
+    0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl:
+    0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+}
+
+@theme inline {
+  /* === BREAKPOINT === */
+  --breakpoint-mobile: 20rem; /* 320px */
+  --breakpoint-tablet: 40rem; /* 648px */
+  --breakpoint-laptop: 64rem; /* 1024px */
+  --breakpoint-desktop: 80rem; /* 1280px */
+
+  /* === MÀU SẮC === */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  /* === MÀU SẮC THƯƠNG MẠI ĐIỆN TỬ === */
+  --color-product-bg: var(--product-bg);
+  --color-product-border: var(--product-border);
+  --color-product-badge: var(--product-badge);
+  --color-product-price: var(--product-price);
+  --color-product-discount: var(--product-discount);
+  --color-cart-bg: var(--cart-bg);
+  --color-cart-item-border: var(--cart-item-border);
+  --color-cart-total-bg: var(--cart-total-bg);
+  --color-checkout-bg: var(--checkout-bg);
+  --color-checkout-step-active: var(--checkout-step-active);
+  --color-checkout-step-inactive: var(--checkout-step-inactive);
+  --color-checkout-payment-selected: var(--checkout-payment-selected);
+
+  /* === FONT === */
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* === TYPOGRAPHY SCALE === */
+  --text-xs: 0.75rem; /* 12px */
+  --text-sm: 0.875rem; /* 14px */
+  --text-base: 1rem; /* 16px */
+  --text-lg: 1.125rem; /* 18px */
+  --text-xl: 1.25rem; /* 20px */
+  --text-2xl: 1.5rem; /* 24px */
+  --text-3xl: 1.875rem; /* 30px */
+  --text-4xl: 2.25rem; /* 36px */
+  --text-5xl: 3rem; /* 48px */
+  --text-6xl: 3.75rem; /* 60px */
+
+  /* === SPACING === */
+  --spacing-xs: var(--spacing-xs);
+  --spacing-sm: var(--spacing-sm);
+  --spacing-md: var(--spacing-md);
+  --spacing-lg: var(--spacing-lg);
+  --spacing-xl: var(--spacing-xl);
+  --spacing-2xl: var(--spacing-2xl);
+  --spacing-3xl: var(--spacing-3xl);
+
+  /* === BORDER RADIUS === */
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-2xl: var(--radius-2xl);
+  --radius-full: var(--radius-full);
+}
+
+@layer utilities {
+  .container {
+    @apply container mx-auto;
+  }
+
+  /* Animation cho skeleton loading */
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  .animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-size: var(--text-base);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  line-height: var(--line-height-normal);
+  overflow-x: hidden;
+  min-height: 100vh;
+}
