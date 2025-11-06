@@ -165,7 +165,13 @@
 
 @layer utilities {
   .container {
-    @apply container mx-auto mobile:px-4 tablet:px-6 laptop:px-8;
+    @apply container mx-auto px-6;
+  }
+
+  @media (max-width: 640px) {
+    .container {
+      @apply mx-0 max-w-full px-6;
+    }
   }
 
   /* Animation cho skeleton loading */
@@ -194,5 +200,18 @@
 
   button {
     @apply cursor-pointer transition-all duration-300 ease-out;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-bold text-primary-foreground;
+  }
+
+  h1 {
+    @apply mobile:text-2xl tablet:text-3xl laptop:text-4xl;
   }
 }

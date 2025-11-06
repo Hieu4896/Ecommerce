@@ -2,8 +2,9 @@ import useSWRInfinite, { SWRInfiniteConfiguration } from "swr/infinite";
 import { useMemo, useCallback } from "react";
 import { productService } from "@services/product.service";
 import { ProductsResponse } from "@src/types/product.type";
+import { useErrorHandler } from "./useErrorHandler";
 
-export const useInfiniteProducts = (
+export const useProducts = (
   params: { limit?: number; searchQuery?: string } = {},
   config?: SWRInfiniteConfiguration<ProductsResponse>,
 ) => {
@@ -42,6 +43,9 @@ export const useInfiniteProducts = (
     };
   }, [limit, searchQuery]);
 
+  // Sử dụng error handler hook để xử lý lỗi tập trung
+  const { getErrorMessage, logError } = useErrorHandler();
+
   // Custom fetcher với xử lý lỗi nâng cao
   const fetcherWithErrorHandling = useCallback(
     async (url: string): Promise<ProductsResponse> => {
@@ -49,20 +53,14 @@ export const useInfiniteProducts = (
         // Sử dụng fetcher với retry cho các lỗi mạng
         return await productService.swrFetcherWithRetry<ProductsResponse>(url);
       } catch (error) {
-        // Log lỗi để debug
-        if (process.env.NODE_ENV === "development") {
-          console.group(`🚨 useInfiniteProducts Error`);
-          console.error("URL:", url);
-          console.error("Error:", error);
-          console.error("Timestamp:", new Date().toISOString());
-          console.groupEnd();
-        }
+        // Log lỗi để debug sử dụng error handler
+        logError(error, `Failed to fetch products from ${url}`);
 
         // Ném lại lỗi để SWR xử lý
         throw error;
       }
     },
-    [],
+    [logError],
   );
 
   // Sử dụng useSWRInfinite để fetch dữ liệu với xử lý lỗi cải thiện
@@ -77,12 +75,10 @@ export const useInfiniteProducts = (
       initialSize: 1,
       // Ngăn việc persist size giữa re-renders
       persistSize: false,
-      // Custom error handling
+      // Custom error handling sử dụng error handler
       onError: (err, key) => {
-        // Xử lý lỗi tập trung
-        if (process.env.NODE_ENV === "development") {
-          console.error(`SWR Error for key ${key}:`, err);
-        }
+        // Xử lý lỗi tập trung sử dụng error handler
+        logError(err, `SWR Error for key ${key}`);
       },
       ...config,
     });
@@ -92,6 +88,16 @@ export const useInfiniteProducts = (
 
   // Lấy tổng số sản phẩm từ trang đầu tiên
   const total = data && data[0] ? data[0].total : 0;
+
+  // Log để debug số lượng sản phẩm thực tế
+  // if (process.env.NODE_ENV === "development" && searchQuery) {
+  //   console.log(`🔍 Search for "${searchQuery}":`);
+  //   console.log(`- API returned: ${products.length} products`);
+  //   console.log(`- Total available: ${total}`);
+  //   console.log(`- API limit per page: ${data?.[0]?.products?.length || 0}`);
+  //   console.log(`- Data pages: ${data?.length || 0}`);
+  //   console.log(`- First page products: ${data?.[0]?.products?.length || 0}`);
+  // }
 
   // Kiểm tra xem đã tải hết dữ liệu chưa
   const isReachingEnd =
@@ -112,82 +118,6 @@ export const useInfiniteProducts = (
     }
   };
 
-  // Xử lý thông báo lỗi thân thiện với người dùng theo SWR best practices
-  const getErrorMessage = useCallback(
-    (
-      error:
-        | (Error & {
-            info?: { message?: string; [key: string]: unknown };
-            status?: number;
-          })
-        | unknown,
-    ): string => {
-      if (!error) return "";
-
-      // Nếu là Error object với status và info (theo SWR best practices)
-      if (
-        error &&
-        typeof error === "object" &&
-        ("status" in error || "message" in error)
-      ) {
-        const swrError = error as Error & {
-          info?: { message?: string; [key: string]: unknown };
-          status?: number;
-        };
-
-        // Ưu tiên hiển thị message từ error.info nếu có
-        if (swrError.info?.message) {
-          return swrError.info.message;
-        }
-
-        // Xử lý các loại lỗi cụ thể theo status code
-        if (swrError.status === 0) {
-          return "Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.";
-        }
-
-        if (swrError.status === 404) {
-          return "Không tìm thấy dữ liệu yêu cầu.";
-        }
-
-        if (swrError.status === 408) {
-          return "Request hết thời gian chờ. Vui lòng thử lại.";
-        }
-
-        if (swrError.status === 429) {
-          return "Quá nhiều yêu cầu. Vui lòng thử lại sau.";
-        }
-
-        if (
-          swrError.status &&
-          swrError.status >= 400 &&
-          swrError.status < 500
-        ) {
-          return "Yêu cầu không hợp lệ. Vui lòng thử lại.";
-        }
-
-        if (swrError.status && swrError.status >= 500) {
-          return "Lỗi máy chủ. Vui lòng thử lại sau.";
-        }
-
-        return swrError.message || "Đã xảy ra lỗi. Vui lòng thử lại.";
-      }
-
-      // Xử lý các loại lỗi khác
-      if (error instanceof Error) {
-        if (error.message.includes("fetch")) {
-          return "Lỗi kết nối mạng. Vui lòng kiểm tra kết nối internet.";
-        }
-        if (error.message.includes("timeout")) {
-          return "Request hết thời gian chờ. Vui lòng thử lại.";
-        }
-        return error.message;
-      }
-
-      return "Đã xảy ra lỗi không xác định. Vui lòng thử lại.";
-    },
-    [],
-  );
-
   // Hàm để retry thủ công
   const retry = useCallback(() => {
     mutate();
@@ -197,6 +127,12 @@ export const useInfiniteProducts = (
   const resetAndRetry = useCallback(() => {
     setSize(1);
     mutate();
+  }, [setSize, mutate]);
+
+  // Hàm để reset khi search query thay đổi
+  const resetOnSearchChange = useCallback(() => {
+    setSize(1); // Reset về trang đầu tiên
+    mutate(); // Trigger re-fetch từ đầu
   }, [setSize, mutate]);
 
   return {
@@ -210,29 +146,9 @@ export const useInfiniteProducts = (
     loadMore,
     retry,
     resetAndRetry,
+    resetOnSearchChange,
     mutate,
     size,
     setSize,
   };
-};
-
-/**
- * Custom hook để implement infinite scroll cho tìm kiếm sản phẩm
- * @param query - Từ khóa tìm kiếm
- * @param params - Tham số cấu hình bổ sung
- * @param config - Cấu hình SWR bổ sung
- * @returns Object chứa các phương thức và trạng thái để quản lý infinite scroll
- */
-export const useInfiniteSearchProducts = (
-  query: string,
-  params: { limit?: number } = {},
-  config?: SWRInfiniteConfiguration<ProductsResponse>,
-) => {
-  return useInfiniteProducts(
-    {
-      ...params,
-      searchQuery: query,
-    },
-    config,
-  );
 };

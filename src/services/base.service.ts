@@ -1,4 +1,11 @@
 import { ApiError } from "@src/types/api.type";
+import {
+  createApiError,
+  createTimeoutError,
+  createNetworkError,
+  createUnknownError,
+  createFallbackError,
+} from "@src/utils/errorUtils";
 
 /**
  * Base Service Class với các phương thức chung và xử lý lỗi
@@ -11,49 +18,211 @@ abstract class BaseService {
   protected readonly baseUrl: string = "https://dummyjson.com";
 
   /**
-   * Phương thức fetcher chung cho tất cả API calls
-   * @param url - URL để fetch dữ liệu
-   * @returns Promise với dữ liệu JSON
-   * @throws ApiError với message và status code
+   * Ghi log lỗi để debug
+   * @param error - Đối tượng lỗi
+   * @param url - URL gây ra lỗi
    */
-  protected async fetcher<T>(url: string): Promise<T> {
-    try {
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw {
-          message:
-            errorData.message || `HTTP error! status: ${response.status}`,
-          status: response.status,
-        } as ApiError;
-      }
-
-      return await response.json();
-    } catch (error) {
-      if (error && typeof error === "object" && "message" in error) {
-        throw error;
-      }
-
-      if (error instanceof Error) {
-        throw {
-          message: error.message,
-        } as ApiError;
-      }
-
-      throw {
-        message: "Unknown error occurred",
-      } as ApiError;
+  public logError(error: ApiError, url: string): void {
+    if (process.env.NODE_ENV === "development") {
+      console.group(`🚨 Base Service Error`);
+      console.error("URL:", url);
+      console.error("Message:", error.message);
+      console.error("Status:", error.status);
+      console.error("Timestamp:", new Date().toISOString());
+      console.groupEnd();
     }
   }
 
   /**
-   * Phương thức fetcher dành riêng cho SWR
+   * Log thông tin debug trong development mode
+   * @param message - Thông điệp debug
+   * @param data - Dữ liệu bổ sung (optional)
+   */
+  public logDebug(message: string, data?: unknown): void {
+    if (process.env.NODE_ENV === "development") {
+      console.group(`🔍 Debug Information`);
+      console.log("Message:", message);
+      if (data) {
+        console.log("Data:", data);
+      }
+      console.log("Timestamp:", new Date().toISOString());
+      console.groupEnd();
+    }
+  }
+
+  /**
+   * Thực hiện fetch request với timeout
+   * @param url - URL để fetch
+   * @param timeout - Thời gian chờ tối đa (ms)
+   * @returns Response object
+   */
+  private async fetchWithTimeout(
+    url: string,
+    timeout: number,
+  ): Promise<Response> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    try {
+      const response = await fetch(url, {
+        signal: controller.signal,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      clearTimeout(timeoutId);
+      return response;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      throw error;
+    }
+  }
+
+  /**
+   * Xử lý response từ API
+   * @param response - Response object từ fetch
+   * @param url - URL đã được gọi
+   * @returns JSON data từ response
+   */
+  private async handleResponse<T>(response: Response, url: string): Promise<T> {
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const error = createApiError(
+        errorData.message || `Lỗi HTTP! trạng thái: ${response.status}`,
+        response.status,
+      );
+      error.info = errorData;
+      this.logError(
+        {
+          message: error.message,
+          status: error.status,
+        },
+        url,
+      );
+      throw error;
+    }
+
+    return await response.json();
+  }
+
+  /**
+   * Xử lý các loại lỗi từ fetch request
+   * @param error - Đối tượng lỗi cần xử lý
+   * @param url - URL gây ra lỗi
+   * @returns Error object đã được xử lý
+   */
+  private handleFetchError(error: unknown, url: string): never {
+    if (error instanceof Error) {
+      if (error.name === "AbortError") {
+        const timeoutError = createTimeoutError();
+        this.logError(
+          {
+            message: timeoutError.message,
+            status: timeoutError.status,
+          },
+          url,
+        );
+        throw timeoutError;
+      }
+
+      if (error.name === "TypeError" && error.message.includes("fetch")) {
+        const networkError = createNetworkError();
+        this.logError(
+          {
+            message: networkError.message,
+            status: networkError.status,
+          },
+          url,
+        );
+        throw networkError;
+      }
+
+      const unknownError = createUnknownError(error);
+      this.logError(
+        {
+          message: unknownError.message,
+        },
+        url,
+      );
+      throw unknownError;
+    }
+
+    if (error && typeof error === "object" && "message" in error) {
+      const apiError = error as ApiError;
+      const errorObj = createApiError(apiError.message, apiError.status || 0);
+      errorObj.info = { message: apiError.message };
+      this.logError(apiError, url);
+      throw errorObj;
+    }
+
+    const fallbackError = createFallbackError();
+    this.logError(
+      {
+        message: fallbackError.message,
+      },
+      url,
+    );
+    throw fallbackError;
+  }
+  /**
+   * Public method để sử dụng swrFetcher từ bên ngoài với xử lý lỗi nâng cao
    * @param url - URL để fetch dữ liệu
+   * @param timeout - Thời gian chờ tối đa (ms)
    * @returns Promise với dữ liệu JSON
    */
-  protected async swrFetcher<T>(url: string): Promise<T> {
-    return this.fetcher<T>(url);
+  public async swrFetcherWithTimeout<T>(
+    url: string,
+    timeout: number = 10000,
+  ): Promise<T> {
+    try {
+      const response = await this.fetchWithTimeout(url, timeout);
+      return await this.handleResponse(response, url);
+    } catch (error: unknown) {
+      throw this.handleFetchError(error, url);
+    }
+  }
+  /**
+   * Xử lý retry cho các request thất bại
+   * @param url - URL để fetch dữ liệu
+   * @param retries - Số lần retry tối đa
+   * @param delay - Độ trễ giữa các lần retry (ms)
+   * @returns Promise với dữ liệu JSON
+   */
+  public async swrFetcherWithRetry<T>(
+    url: string,
+    retries: number = 3,
+    delay: number = 1000,
+  ): Promise<T> {
+    let lastError: ApiError;
+
+    for (let i = 0; i <= retries; i++) {
+      try {
+        return await this.swrFetcherWithTimeout<T>(url);
+      } catch (error) {
+        lastError = error as ApiError;
+
+        // Nếu là lỗi client (4xx), không retry
+        if (
+          lastError.status &&
+          lastError.status >= 400 &&
+          lastError.status < 500
+        ) {
+          throw lastError;
+        }
+
+        // Nếu đã hết lần retry, throw lỗi cuối cùng
+        if (i === retries) {
+          throw lastError;
+        }
+
+        // Đợi trước khi retry
+        await new Promise((resolve) =>
+          setTimeout(resolve, delay * Math.pow(2, i)),
+        );
+      }
+    }
+
+    throw lastError!;
   }
 
   /**
