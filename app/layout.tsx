@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Pawsy",
-  description: "Welcome to Pawsy",
+  title: "Ecommerce",
+  description: "Welcome to Ecommerce Website",
 };
 
 export default function RootLayout({
@@ -26,7 +26,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col mobile:gap-6 laptop:gap-12`}
       >
         <Header />
         {children}

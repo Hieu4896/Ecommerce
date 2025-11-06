@@ -165,7 +165,7 @@
 
 @layer utilities {
   .container {
-    @apply container mx-auto;
+    @apply container mx-auto mobile:px-4 tablet:px-6 laptop:px-8;
   }
 
   /* Animation cho skeleton loading */
@@ -184,15 +184,11 @@
   }
 }
 
-html {
-  scroll-behavior: smooth;
-}
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-size: var(--text-base);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
-  line-height: var(--line-height-normal);
-  overflow-x: hidden;
-  min-height: 100vh;
+@layer base {
+  html {
+    @apply scroll-smooth font-sans leading-normal tracking-tight;
+  }
+  body {
+    @apply bg-background text-foreground overflow-x-hidden min-h-screen;
+  }
 }

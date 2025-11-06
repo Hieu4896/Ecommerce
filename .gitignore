@@ -44,5 +44,5 @@ pnpm-lock.yaml
 
 .prettierrc
 .kilocode
-docs
+# docs
 .husky
