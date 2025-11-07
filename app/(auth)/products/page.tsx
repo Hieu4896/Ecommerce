@@ -110,12 +110,7 @@ export default function ProductsPage() {
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-amber-600"
                 aria-label="Clear search"
               >
-                <svg
-                  className="h-4 w-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -179,9 +174,7 @@ export default function ProductsPage() {
             {!isLoading && products.length > 0 && (
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <span className="text-2xl font-bold text-gray-800">
-                    {products.length}
-                  </span>
+                  <span className="text-2xl font-bold text-gray-800">{products.length}</span>
                   <span className="text-gray-600">sản phẩm được tìm thấy</span>
                 </div>
               </div>
@@ -229,9 +222,7 @@ export default function ProductsPage() {
       {isError && (
         <div className="text-center">
           <h2 className="text-red-600 mb-4">Đã có lỗi xảy ra</h2>
-          <p className="text-gray-600 mb-4">
-            {errorMessage || "Không thể tải danh sách sản phẩm"}
-          </p>
+          <p className="text-gray-600 mb-4">{errorMessage || "Không thể tải danh sách sản phẩm"}</p>
           <div className="flex justify-center gap-4">
             <Button variant="destructive" size="lg" onClick={handleRetry}>
               Thử lại
@@ -262,12 +253,7 @@ export default function ProductsPage() {
       {/* Nút Load More */}
       {!isReachingEnd && products.length > 0 && (
         <div className="flex justify-center mt-6">
-          <Button
-            variant="outline"
-            onClick={loadMore}
-            disabled={isLoadingMore}
-            size="lg"
-          >
+          <Button variant="outline" onClick={loadMore} disabled={isLoadingMore} size="lg">
             {isLoadingMore ? "Đang tải..." : "Tải thêm"}
           </Button>
         </div>
@@ -276,9 +262,7 @@ export default function ProductsPage() {
       {/* Thông báo khi đã tải hết dữ liệu */}
       {isReachingEnd && products.length > 0 && (
         <div className="text-center mt-8">
-          <p className="text-gray-500">
-            Đã hiển thị tất cả {products.length} sản phẩm
-          </p>
+          <p className="text-gray-500">Đã hiển thị tất cả {products.length} sản phẩm</p>
         </div>
       )}
     </main>

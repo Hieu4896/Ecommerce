@@ -41,10 +41,7 @@ class ProductService extends BaseService {
    * @param params - Tham số query bổ sung (limit, skip, select)
    * @returns URL để tìm kiếm sản phẩm
    */
-  public getSearchProductsUrl(
-    query: string,
-    params?: Omit<ProductsQueryParams, "q">,
-  ): string {
+  public getSearchProductsUrl(query: string, params?: Omit<ProductsQueryParams, "q">): string {
     const queryParams = {
       limit: params?.limit || 20,
       skip: params?.skip || 0,

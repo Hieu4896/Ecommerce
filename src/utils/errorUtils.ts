@@ -29,11 +29,7 @@ export const getErrorMessage = (error: unknown): string => {
   if (!error) return "";
 
   // Nếu là Error object với status và info (theo SWR best practices)
-  if (
-    error &&
-    typeof error === "object" &&
-    ("status" in error || "message" in error)
-  ) {
+  if (error && typeof error === "object" && ("status" in error || "message" in error)) {
     const swrError = error as Error & {
       info?: { message?: string; [key: string]: unknown };
       status?: number;
@@ -107,10 +103,7 @@ export const createNetworkError = (): Error & {
   info: { message: string };
   status: number;
 } => {
-  return createApiError(
-    "Lỗi kết nối mạng. Vui lòng kiểm tra kết nối internet.",
-    0,
-  );
+  return createApiError("Lỗi kết nối mạng. Vui lòng kiểm tra kết nối internet.", 0);
 };
 
 /**
@@ -145,10 +138,7 @@ export const createFallbackError = (): Error & {
   info: { message: string };
   status?: number;
 } => {
-  return createApiError(
-    "Đã xảy ra lỗi không xác định. Vui lòng thử lại.",
-    500,
-  ) as Error & {
+  return createApiError("Đã xảy ra lỗi không xác định. Vui lòng thử lại.", 500) as Error & {
     info: { message: string };
     status?: number;
   };

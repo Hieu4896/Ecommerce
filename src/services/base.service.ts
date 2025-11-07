@@ -56,10 +56,7 @@ abstract class BaseService {
    * @param timeout - Thời gian chờ tối đa (ms)
    * @returns Response object
    */
-  private async fetchWithTimeout(
-    url: string,
-    timeout: number,
-  ): Promise<Response> {
+  private async fetchWithTimeout(url: string, timeout: number): Promise<Response> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeout);
 
@@ -170,10 +167,7 @@ abstract class BaseService {
    * @param timeout - Thời gian chờ tối đa (ms)
    * @returns Promise với dữ liệu JSON
    */
-  public async swrFetcherWithTimeout<T>(
-    url: string,
-    timeout: number = 10000,
-  ): Promise<T> {
+  public async swrFetcherWithTimeout<T>(url: string, timeout: number = 10000): Promise<T> {
     try {
       const response = await this.fetchWithTimeout(url, timeout);
       return await this.handleResponse(response, url);
@@ -202,11 +196,7 @@ abstract class BaseService {
         lastError = error as ApiError;
 
         // Nếu là lỗi client (4xx), không retry
-        if (
-          lastError.status &&
-          lastError.status >= 400 &&
-          lastError.status < 500
-        ) {
+        if (lastError.status && lastError.status >= 400 && lastError.status < 500) {
           throw lastError;
         }
 
@@ -216,9 +206,7 @@ abstract class BaseService {
         }
 
         // Đợi trước khi retry
-        await new Promise((resolve) =>
-          setTimeout(resolve, delay * Math.pow(2, i)),
-        );
+        await new Promise((resolve) => setTimeout(resolve, delay * Math.pow(2, i)));
       }
     }
 
@@ -231,10 +219,7 @@ abstract class BaseService {
    * @param params - Query parameters
    * @returns URL hoàn chỉnh với query string
    */
-  protected buildUrl(
-    endpoint: string,
-    params?: Record<string, unknown>,
-  ): string {
+  protected buildUrl(endpoint: string, params?: Record<string, unknown>): string {
     const url = new URL(endpoint, this.baseUrl);
 
     if (params) {

@@ -4,10 +4,7 @@ import { productService } from "@services/product.service";
 import { ProductsResponse } from "@src/types/product.type";
 import { useErrorHandler } from "./useErrorHandler";
 
-export const useProducts = (
-  params: { limit?: number; searchQuery?: string } = {},
-  config?: SWRInfiniteConfiguration<ProductsResponse>,
-) => {
+export const useProducts = (params: { limit?: number; searchQuery?: string } = {}) => {
   const { limit = 20, searchQuery } = params;
 
   /**
@@ -17,10 +14,7 @@ export const useProducts = (
    * @returns Key cho SWR hoặc null nếu không thể tải thêm
    */
   const getKey = useMemo(() => {
-    return (
-      pageIndex: number,
-      previousPageData: ProductsResponse | null,
-    ): string | null => {
+    return (pageIndex: number, previousPageData: ProductsResponse | null): string | null => {
       // Nếu đã có dữ liệu từ trang trước và không còn sản phẩm nào, trả về null
       if (previousPageData && previousPageData.products.length === 0) {
         return null;
@@ -55,7 +49,6 @@ export const useProducts = (
       } catch (error) {
         // Log lỗi để debug sử dụng error handler
         logError(error, `Failed to fetch products from ${url}`);
-
         // Ném lại lỗi để SWR xử lý
         throw error;
       }
@@ -63,25 +56,15 @@ export const useProducts = (
     [logError],
   );
 
+  // Cấu hình tối giản cho SWR - chỉ giữ những gì thực sự cần thiết
+  const swrConfig: SWRInfiniteConfiguration<ProductsResponse> = {
+    // Tắt revalidate khi focus để tránh gọi API không cần thiết khi user quay lại tab
+    revalidateOnFocus: false,
+  };
+
   // Sử dụng useSWRInfinite để fetch dữ liệu với xử lý lỗi cải thiện
   const { data, error, isLoading, isValidating, size, setSize, mutate } =
-    useSWRInfinite<ProductsResponse>(getKey, fetcherWithErrorHandling, {
-      revalidateOnFocus: false,
-      revalidateOnReconnect: true, // Kích hoạt khi kết nối lại
-      shouldRetryOnError: true,
-      errorRetryCount: 3,
-      errorRetryInterval: 5000,
-      // Chỉ fetch 1 page ban đầu, không tự động fetch thêm
-      initialSize: 1,
-      // Ngăn việc persist size giữa re-renders
-      persistSize: false,
-      // Custom error handling sử dụng error handler
-      onError: (err, key) => {
-        // Xử lý lỗi tập trung sử dụng error handler
-        logError(err, `SWR Error for key ${key}`);
-      },
-      ...config,
-    });
+    useSWRInfinite<ProductsResponse>(getKey, fetcherWithErrorHandling, swrConfig);
 
   // Flatten danh sách sản phẩm từ tất cả các trang
   const products = data ? data.flatMap((page) => page.products) : [];
@@ -89,21 +72,10 @@ export const useProducts = (
   // Lấy tổng số sản phẩm từ trang đầu tiên
   const total = data && data[0] ? data[0].total : 0;
 
-  // Log để debug số lượng sản phẩm thực tế
-  // if (process.env.NODE_ENV === "development" && searchQuery) {
-  //   console.log(`🔍 Search for "${searchQuery}":`);
-  //   console.log(`- API returned: ${products.length} products`);
-  //   console.log(`- Total available: ${total}`);
-  //   console.log(`- API limit per page: ${data?.[0]?.products?.length || 0}`);
-  //   console.log(`- Data pages: ${data?.length || 0}`);
-  //   console.log(`- First page products: ${data?.[0]?.products?.length || 0}`);
-  // }
-
   // Kiểm tra xem đã tải hết dữ liệu chưa
   const isReachingEnd =
     data && data[data.length - 1]
-      ? data[data.length - 1].products.length < limit ||
-        products.length >= total
+      ? data[data.length - 1].products.length < limit || products.length >= total
       : false;
 
   // Trạng thái đang tải thêm dữ liệu theo SWR best practices
@@ -138,6 +110,7 @@ export const useProducts = (
   return {
     products,
     total,
+    size,
     isLoading,
     isLoadingMore,
     isError: !!error,
@@ -148,7 +121,6 @@ export const useProducts = (
     resetAndRetry,
     resetOnSearchChange,
     mutate,
-    size,
     setSize,
   };
 };

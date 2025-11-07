@@ -1,11 +1,5 @@
 import { Product } from "@src/types/product.type";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@src/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@src/components/ui/card";
 import { Button } from "@src/components/ui/button";
 
 /**
@@ -24,33 +18,23 @@ export const ProductItem = ({ product }: { product: Product }) => {
             />
           )}
           <div className="flex-1">
-            <CardTitle className="text-lg text-white line-clamp-1">
-              {product.title}
-            </CardTitle>
-            <CardDescription className="line-clamp-2 mt-1">
-              {product.description}
-            </CardDescription>
+            <CardTitle className="text-lg text-white line-clamp-1">{product.title}</CardTitle>
+            <CardDescription className="line-clamp-2 mt-1">{product.description}</CardDescription>
           </div>
         </div>
       </CardHeader>
       <CardContent className="pt-0">
         <div className="flex justify-between items-center mb-3">
           <div className="flex items-center gap-2">
-            <span className="text-lg font-semibold text-product-price">
-              ${product.price}
-            </span>
+            <span className="text-lg font-semibold text-product-price">${product.price}</span>
             {product.discountPercentage && (
-              <span className="text-sm text-product-discount">
-                -{product.discountPercentage}%
-              </span>
+              <span className="text-sm text-product-discount">-{product.discountPercentage}%</span>
             )}
           </div>
           {product.rating && (
             <div className="flex items-center gap-1">
               <span className="text-sm text-primary-foreground">Rating:</span>
-              <span className="text-sm font-medium text-accent">
-                {product.rating}
-              </span>
+              <span className="text-sm font-medium text-accent">{product.rating}</span>
             </div>
           )}
         </div>
