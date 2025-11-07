@@ -1,13 +1,9 @@
-import { Product } from "./product.type";
-
 /**
  * Interface cho một item trong giỏ hàng
  */
 export interface CartItem {
   id: number; // ID của sản phẩm
-  product: Product; // Thông tin chi tiết sản phẩm
   quantity: number; // Số lượng
-  addedAt: string; // Thời gian thêm vào giỏ hàng (ISO string)
 }
 
 /**
@@ -21,123 +17,36 @@ export interface Cart {
   totalProducts: number; // Tổng số sản phẩm
   totalQuantity: number; // Tổng số lượng sản phẩm
   discountedTotal: number; // Tổng giá trị sau giảm giá
-  createdAt: string; // Thời gian tạo giỏ hàng
-  updatedAt: string; // Thời gian cập nhật giỏ hàng
+}
+
+export interface CartStore {
+  cart: Cart | null;
+  addNewCart: ({ userId, products }: { userId: number; products: CartItem[] }) => Promise<void>;
+  updateCart: ({ cartId, products }: { cartId: number; products: CartItem[] }) => Promise<Response>;
+  clearCart: () => void;
 }
 
 /**
- * Interface cho response từ DummyJSON Cart API
+ * Interface cho request thêm giỏ hàng mới
  */
-export interface CartResponse {
-  id: number;
+export interface AddCartRequest {
   userId: number;
-  products: Array<{
-    id: number;
-    title: string;
-    price: number;
-    quantity: number;
-    total: number;
-    discountPercentage: number;
-    discountedTotal: number;
-    thumbnail?: string;
-  }>;
-  total: number;
-  discountedTotal: number;
-  totalProducts: number;
-  totalQuantity: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-/**
- * Interface cho request thêm sản phẩm vào giỏ hàng
- */
-export interface AddToCartRequest {
-  userId: number;
-  products: Array<{
-    id: number;
-    quantity: number;
-  }>;
-}
-
-/**
- * Interface cho response khi thêm sản phẩm vào giỏ hàng
- */
-export interface AddToCartResponse {
-  id: number;
-  products: Array<{
-    id: number;
-    title: string;
-    price: number;
-    quantity: number;
-    total: number;
-    discountPercentage: number;
-    discountedTotal: number;
-    thumbnail?: string;
-  }>;
-  total: number;
-  discountedTotal: number;
-  totalProducts: number;
-  totalQuantity: number;
-  userId: number;
+  products: CartItem[];
 }
 
 /**
  * Interface cho request cập nhật giỏ hàng
  */
 export interface UpdateCartRequest {
-  merge?: boolean; // Có merge với giỏ hàng hiện tại hay không
-  products: Array<{
-    id: number;
-    quantity: number;
-  }>;
+  merge?: boolean; // Có giữ lại sản phẩm cũ hay không
+  products: CartItem[];
 }
 
 /**
- * Interface cho lỗi API
+ * Interface cho response sau khi xóa giỏ hàng
  */
-export interface CartApiError {
-  message: string;
-  status?: number;
-}
-
-/**
- * Interface cho local storage cart state
- */
-export interface LocalCartState {
-  items: CartItem[];
-  total: number;
-  totalQuantity: number;
-  updatedAt: string;
-}
-
-/**
- * Interface cho Cart Store state
- */
-export interface CartState {
-  // State
-  cart: Cart | null;
-  isLoading: boolean;
-  error: string | null;
-  isAuthenticated: boolean;
-  userId: number | null;
-
-  // Actions
-  setLoading: (loading: boolean) => void;
-  setError: (error: string | null) => void;
-  setAuth: (isAuthenticated: boolean, userId?: number) => void;
-
-  // Cart operations
-  initializeCart: () => Promise<void>;
-  addToCart: (product: Product, quantity?: number) => Promise<void>;
-  removeFromCart: (productId: number) => Promise<void>;
-  updateQuantity: (productId: number, quantity: number) => Promise<void>;
-  clearCart: () => Promise<void>;
-  refreshCart: () => Promise<void>;
-
-  // Getters
-  getTotalItems: () => number;
-  getTotalPrice: () => number;
-  isInCart: (productId: number) => boolean;
-  getItemQuantity: (productId: number) => number;
+export interface DeleteCartResponse {
+  id: number;
+  isDeleted: boolean;
+  deletedOn: string;
 }

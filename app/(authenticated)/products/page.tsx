@@ -2,6 +2,7 @@
 
 import { useRef, useState, useCallback } from "react";
 import { useProducts } from "@hooks/useProducts";
+import { useInfiniteScroll } from "@hooks/useInfiniteScroll";
 import { ProductItem } from "@src/components/product/ProductItem";
 import { ProductSkeleton } from "@src/components/product/ProductSkeleton";
 import { Button } from "@components/button";
@@ -25,6 +26,18 @@ export default function ProductsPage() {
     limit: 20, // Mạc định 20 items cho infinite scroll
     searchQuery, // Truyền state vào hook
   });
+  console.log("products", products);
+
+  // Áp dụng hook infinite scroll để tự động tải thêm dữ liệu
+  const infiniteScrollRef = useInfiniteScroll(
+    !isReachingEnd && products.length >= 20, // hasMore - còn dữ liệu để tải và đã có ít nhất 1 trang
+    isLoadingMore, // isLoading - đang tải
+    loadMore, // onLoadMore - hàm tải thêm
+    {
+      threshold: 0.1, // Kích hoạt khi 10% element visible
+      rootMargin: "20px", // rootMargin để tránh kích hoạt quá sớm
+    },
+  );
 
   // Reset search khi có lỗi
   const handleRetry = useCallback(() => {
@@ -246,12 +259,15 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {/* Nút Load More */}
-      {!isReachingEnd && products.length > 0 && (
-        <div className="flex justify-center mt-6">
-          <Button variant="outline" onClick={loadMore} disabled={isLoadingMore} size="lg">
-            {isLoadingMore ? "Đang tải..." : "Tải thêm"}
-          </Button>
+      {/* Trigger element cho infinite scroll */}
+      {!isReachingEnd && products.length >= 20 && (
+        <div ref={infiniteScrollRef} className="flex justify-center mt-6 h-10">
+          {isLoadingMore && (
+            <div className="flex items-center justify-center py-4">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-amber-600 border-t-transparent mr-2"></div>
+              <span className="text-gray-600">Đang tải thêm sản phẩm...</span>
+            </div>
+          )}
         </div>
       )}
 

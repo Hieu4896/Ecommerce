@@ -1,4 +1,4 @@
-import { NextAuthOptions, User } from "next-auth";
+import { NextAuthOptions } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 import BaseService from "@src/services/base.service";
@@ -9,39 +9,10 @@ import {
   CustomSession,
   SessionUser,
   RefreshTokenResponse,
+  ExtendedJWT,
+  ExtendedUser,
+  ExtendedSession,
 } from "@src/types/auth.type";
-
-/**
- * Interface mở rộng cho Session để chứa thông tin tùy chỉnh
- */
-interface ExtendedSession {
-  user?: SessionUser;
-  accessToken?: string;
-  refreshToken?: string;
-  error?: string;
-}
-
-/**
- * Interface mở rộng cho JWT để chứa thông tin tùy chỉnh
- */
-interface ExtendedJWT extends JWT {
-  user?: SessionUser;
-  accessToken?: string;
-  refreshToken?: string;
-  expiresAt?: number;
-  error?: string;
-}
-
-/**
- * Interface mở rộng cho User để chứa thông tin tùy chỉnh
- */
-interface ExtendedUser extends User {
-  username?: string;
-  firstName?: string;
-  lastName?: string;
-  accessToken?: string;
-  refreshToken?: string;
-}
 
 /**
  * Service xử lý authentication

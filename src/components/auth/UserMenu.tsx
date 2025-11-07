@@ -4,15 +4,9 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuPortal,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@components/dropdown-menu";
-import { LogOutIcon, ShoppingCart, ShoppingCartIcon } from "lucide-react";
+import { LogOutIcon, ShoppingCartIcon } from "lucide-react";
 import { Session } from "next-auth";
 import { signOut } from "next-auth/react";
 import Image from "next/image";
@@ -39,10 +33,12 @@ export function UserMenu({
       <DropdownMenuTrigger asChild>
         <button className="flex items-center gap-2">
           {session?.user?.image && (
-            <img
+            <Image
               src={session.user.image}
               alt={session.user.name || "User"}
-              className="w-8 h-8 rounded-full object-cover"
+              className="w-8 h-auto rounded-full object-cover"
+              width={32}
+              height={32}
             />
           )}
         </button>

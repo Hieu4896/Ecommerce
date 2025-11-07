@@ -1,21 +1,33 @@
 import { Product } from "@src/types/product.type";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@src/components/ui/card";
 import { Button } from "@src/components/ui/button";
+import Image from "next/image";
+import { useCartStore } from "@src/stores/useCartStore";
+import { Input } from "../ui/input";
+import { useRef } from "react";
 
 /**
  * Component hiển thị một sản phẩm với nút Add to Cart
  */
 export const ProductItem = ({ product }: { product: Product }) => {
+  const { addNewCart } = useCartStore();
+
+  const quantityRef = useRef<HTMLInputElement>(null);
+
   return (
     <Card className="w-full border-border hover:border-accent transition-colors duration-300 ease-out">
       <CardHeader className="pb-2">
         <div className="flex gap-4">
           {product.thumbnail && (
-            <img
-              src={product.thumbnail}
-              alt={product.title}
-              className="w-16 h-16 object-cover rounded-md"
-            />
+            <div className="relative w-16">
+              <Image
+                src={product.thumbnail}
+                alt={product.title}
+                className="object-cover"
+                fill
+                sizes="64px"
+              />
+            </div>
           )}
           <div className="flex-1">
             <CardTitle className="text-lg text-white line-clamp-1">{product.title}</CardTitle>
@@ -38,14 +50,32 @@ export const ProductItem = ({ product }: { product: Product }) => {
             </div>
           )}
         </div>
-        <Button
-          // onClick={handleAddToCart}
-          // disabled={isAdding}
-          className="w-full"
-        >
-          Add to Cart
-          {/* {isAdding ? "Đang thêm..." : "Add to Cart"} */}
-        </Button>
+        <div className="flex items-center justify-between gap-4">
+          <Button
+            className="flex-1"
+            onClick={() => {
+              const quantity = Number(quantityRef.current?.value || 1);
+              const cartItem = {
+                id: product.id,
+                quantity,
+              };
+              addNewCart({
+                userId: 1,
+                products: [cartItem],
+              });
+            }}
+          >
+            Add to Cart
+          </Button>
+
+          <Input
+            ref={quantityRef}
+            type="number"
+            min={1}
+            defaultValue={1}
+            className="w-16 bg-muted"
+          />
+        </div>
       </CardContent>
     </Card>
   );

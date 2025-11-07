@@ -2,6 +2,9 @@
  * Types cho authentication system
  */
 
+import { User } from "next-auth";
+import { JWT } from "next-auth/jwt";
+
 /**
  * Interface cho thông tin đăng nhập
  */
@@ -149,4 +152,36 @@ export interface RefreshTokenResponse {
  */
 export interface LoginFormProps {
   callbackUrl?: string;
+}
+
+/**
+ * Interface mở rộng cho Session để chứa thông tin tùy chỉnh
+ */
+export interface ExtendedSession {
+  user?: SessionUser;
+  accessToken?: string;
+  refreshToken?: string;
+  error?: string;
+}
+
+/**
+ * Interface mở rộng cho JWT để chứa thông tin tùy chỉnh
+ */
+export interface ExtendedJWT extends JWT {
+  user?: SessionUser;
+  accessToken?: string;
+  refreshToken?: string;
+  expiresAt?: number;
+  error?: string;
+}
+
+/**
+ * Interface mở rộng cho User để chứa thông tin tùy chỉnh
+ */
+export interface ExtendedUser extends User {
+  username?: string;
+  firstName?: string;
+  lastName?: string;
+  accessToken?: string;
+  refreshToken?: string;
 }
