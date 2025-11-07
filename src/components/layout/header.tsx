@@ -18,15 +18,14 @@ export default function Header() {
   const shouldHideAuthUI = pathName === "/" || pathName === "/login";
 
   return (
-    <header className="w-full h-15 py-2 bg-accent flex justify-between items-center">
-      <nav className="container h-full flex items-center justify-between">
-        <Link href="/" className="flex items-center">
-          <Image src="/logo.png" alt="Pawsy" width={60} height={60} className="w-8 h-auto" />
-        </Link>
+    !shouldHideAuthUI && (
+      <header className="w-full h-15 py-2 bg-accent flex justify-between items-center">
+        <nav className="container h-full flex items-center justify-between">
+          <Link href="/" className="flex items-center">
+            <Image src="/logo.png" alt="Pawsy" width={60} height={60} className="w-8 h-auto" />
+          </Link>
 
-        <div className="flex items-center gap-4">
-          {/* Chỉ hiển thị authentication UI khi không ở trang chủ hoặc trang đăng nhập */}
-          {!shouldHideAuthUI && (
+          <div className="flex items-center gap-4">
             <>
               {/* Hiển thị thông tin user hoặc nút đăng nhập */}
               {status === "loading" ? (
@@ -42,9 +41,9 @@ export default function Header() {
                 </Button>
               )}
             </>
-          )}
-        </div>
-      </nav>
-    </header>
+          </div>
+        </nav>
+      </header>
+    )
   );
 }

@@ -12,6 +12,5 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/products";
 
-  // Truyền callbackUrl vào LoginForm để xử lý redirect sau khi login thành công
   return <LoginForm callbackUrl={callbackUrl} />;
 }

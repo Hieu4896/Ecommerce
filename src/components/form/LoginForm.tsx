@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -31,8 +30,6 @@ type LoginFormData = yup.InferType<typeof loginSchema>;
  * Sử dụng React Hook Form và Yup validation
  */
 export default function LoginForm({ callbackUrl = "/products" }: LoginFormProps) {
-  const router = useRouter();
-
   // State để quản lý việc hiển thị/ẩn mật khẩu
   const [showPassword, setShowPassword] = useState(false);
 
@@ -71,7 +68,8 @@ export default function LoginForm({ callbackUrl = "/products" }: LoginFormProps)
         });
       } else {
         // Đăng nhập thành công, chuyển hướng đến trang được chỉ định trong callbackUrl
-        router.push(callbackUrl);
+        // Sử dụng window.location.href để tránh redirect loop
+        window.location.href = callbackUrl;
       }
     } catch {
       // Sử dụng setError từ react-hook-form để hiển thị lỗi ở cấp độ form
@@ -82,11 +80,11 @@ export default function LoginForm({ callbackUrl = "/products" }: LoginFormProps)
   };
 
   return (
-    <div className="max-w-[70%] m-auto min-h-screen p-12 flex items-center justify-center">
+    <div className="max-w-[70%] m-auto bg-foreground/70 p-12 flex items-center justify-center">
       <div className="w-full space-y-8 ">
-        <div className="text-center">
+        <div className="text-center space-y-4">
           <h1>Đăng nhập vào tài khoản</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="text-sm text-primary-foreground">
             Sử dụng tài khoản test: emilys / emilyspass
           </p>
         </div>
