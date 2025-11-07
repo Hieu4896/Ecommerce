@@ -212,4 +212,8 @@
   h1 {
     @apply mobile:text-2xl tablet:text-3xl laptop:text-4xl;
   }
+
+  a {
+    @apply hover:underline text-accent transition-all duration-300 ease-out;
+  }
 }

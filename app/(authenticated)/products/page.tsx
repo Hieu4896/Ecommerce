@@ -10,8 +10,6 @@ import { Input } from "@components/input";
 export default function ProductsPage() {
   const searchInputRef = useRef<HTMLInputElement>(null); // Ref cho input element
   const [searchQuery, setSearchQuery] = useState(""); // State để trigger re-render khi cần thiết
-  console.log("searchQuery", searchQuery);
-
   const {
     products,
     isLoading,
@@ -27,8 +25,6 @@ export default function ProductsPage() {
     limit: 20, // Mạc định 20 items cho infinite scroll
     searchQuery, // Truyền state vào hook
   });
-
-  console.log("products", products);
 
   // Reset search khi có lỗi
   const handleRetry = useCallback(() => {
