@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@src/components/layout/header";
-import AuthSessionProvider from "@providers/session-provider";
+import { AuthProvider } from "@src/providers/auth.provider";
 import { Toaster } from "react-hot-toast";
 
 const geistSans = Geist({
@@ -30,7 +30,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col bg-foreground`}
       >
-        <AuthSessionProvider>
+        <AuthProvider>
           <Header />
           {children}
           <Toaster
@@ -39,7 +39,7 @@ export default function RootLayout({
               duration: 1500,
             }}
           />
-        </AuthSessionProvider>
+        </AuthProvider>
       </body>
     </html>
   );

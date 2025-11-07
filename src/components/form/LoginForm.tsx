@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -9,6 +8,7 @@ import { Button } from "@components/button";
 import { Input } from "@components/input";
 import { Label } from "@components/label";
 import { LoginFormProps } from "@src/types/auth.type";
+import { useAuth } from "@hooks/useAuth";
 
 /**
  * Schema validation cho form đăng nhập sử dụng Yup
@@ -27,11 +27,14 @@ type LoginFormData = yup.InferType<typeof loginSchema>;
 
 /**
  * Component LoginForm để hiển thị form đăng nhập
- * Sử dụng React Hook Form và Yup validation
+ * Sử dụng React Hook Form, Yup validation và AuthContext
  */
 export default function LoginForm({ callbackUrl = "/products" }: LoginFormProps) {
   // State để quản lý việc hiển thị/ẩn mật khẩu
   const [showPassword, setShowPassword] = useState(false);
+
+  // Lấy hàm login từ AuthContext
+  const { login, isLoading, error } = useAuth();
 
   // Khởi tạo React Hook Form với Yup resolver
   const {
@@ -42,8 +45,8 @@ export default function LoginForm({ callbackUrl = "/products" }: LoginFormProps)
   } = useForm<LoginFormData>({
     resolver: yupResolver(loginSchema),
     defaultValues: {
-      username: "carterb",
-      password: "carterbpass",
+      username: "emilys",
+      password: "emilyspass",
     },
   });
 
@@ -53,28 +56,20 @@ export default function LoginForm({ callbackUrl = "/products" }: LoginFormProps)
    */
   const onSubmit = async (data: LoginFormData) => {
     try {
-      const result = await signIn("credentials", {
+      // Sử dụng hàm login từ AuthContext
+      await login({
         username: data.username,
         password: data.password,
-        redirect: false,
+        expiresInMins: 30, // Token hết hạn sau 30 phút
       });
 
-      if (result?.error) {
-        console.log("errors", result.error);
-
-        // Sử dụng setError từ react-hook-form để hiển thị lỗi ở cấp độ form
-        setFormError("root", {
-          message: "Tên đăng nhập hoặc mật khẩu không đúng",
-        });
-      } else {
-        // Đăng nhập thành công, chuyển hướng đến trang được chỉ định trong callbackUrl
-        // Sử dụng window.location.href để tránh redirect loop
-        window.location.href = callbackUrl;
-      }
-    } catch {
+      // Đăng nhập thành công, chuyển hướng đến trang được chỉ định trong callbackUrl
+      // Sử dụng window.location.href để tránh redirect loop
+      window.location.href = callbackUrl;
+    } catch (error) {
       // Sử dụng setError từ react-hook-form để hiển thị lỗi ở cấp độ form
       setFormError("root", {
-        message: "Có lỗi xảy ra, vui lòng thử lại",
+        message: error instanceof Error ? error.message : "Tên đăng nhập hoặc mật khẩu không đúng",
       });
     }
   };
@@ -85,7 +80,7 @@ export default function LoginForm({ callbackUrl = "/products" }: LoginFormProps)
         <div className="text-center space-y-4">
           <h1>Đăng nhập vào tài khoản</h1>
           <p className="text-sm text-primary-foreground">
-            Sử dụng tài khoản test với userId : 33 - carterb
+            Sử dụng tài khoản test: emilys / emilyspass
           </p>
         </div>
 
@@ -165,8 +160,14 @@ export default function LoginForm({ callbackUrl = "/products" }: LoginFormProps)
             </div>
           )}
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? "Đang đăng nhập..." : "Đăng nhập"}
+          {error && (
+            <div className="bg-destructive/10 border border-destructive/20 text-destructive p-3 rounded-md text-sm">
+              {error}
+            </div>
+          )}
+
+          <Button type="submit" className="w-full" disabled={isSubmitting || isLoading}>
+            {isSubmitting || isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
           </Button>
         </form>
       </div>

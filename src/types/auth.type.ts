@@ -1,9 +1,4 @@
-/**
- * Types cho authentication system
- */
-
-import { User } from "next-auth";
-import { JWT } from "next-auth/jwt";
+import { ReactNode } from "react";
 
 /**
  * Interface cho thông tin đăng nhập
@@ -11,6 +6,7 @@ import { JWT } from "next-auth/jwt";
 export interface LoginCredentials {
   username: string;
   password: string;
+  expiresInMins?: number; // Optional, defaults to 60
 }
 
 /**
@@ -24,7 +20,7 @@ export interface AuthResponse {
   lastName: string;
   gender: string;
   image: string;
-  token: string;
+  accessToken: string;
   refreshToken: string;
 }
 
@@ -96,15 +92,6 @@ export interface UserInfo {
 }
 
 /**
- * Interface cho JWT token
- */
-export interface JWTToken {
-  accessToken: string;
-  refreshToken: string;
-  expiresAt: number;
-}
-
-/**
  * Interface cho user trong session
  */
 export interface SessionUser {
@@ -118,36 +105,6 @@ export interface SessionUser {
 }
 
 /**
- * Interface cho custom session
- */
-export interface CustomSession {
-  user: SessionUser;
-  expires: string;
-  accessToken: string;
-  refreshToken: string;
-  error?: string;
-}
-
-/**
- * Interface cho JWT callback
- */
-export interface CustomJWT {
-  user?: SessionUser;
-  accessToken?: string;
-  refreshToken?: string;
-  expiresAt?: number;
-  error?: string;
-}
-
-/**
- * Interface cho refresh token response
- */
-export interface RefreshTokenResponse {
-  token: string;
-  refreshToken: string;
-}
-
-/**
  * Props cho LoginForm component
  */
 export interface LoginFormProps {
@@ -155,33 +112,22 @@ export interface LoginFormProps {
 }
 
 /**
- * Interface mở rộng cho Session để chứa thông tin tùy chỉnh
+ * Interface cho authentication context
  */
-export interface ExtendedSession {
-  user?: SessionUser;
-  accessToken?: string;
-  refreshToken?: string;
-  error?: string;
+export interface AuthContextType {
+  user: SessionUser | null;
+  isLoading: boolean;
+  isLoggingOut: boolean;
+  isAuthenticated: boolean;
+  login: (credentials: LoginCredentials) => Promise<void>;
+  logout: () => Promise<void>;
+  refreshAuth: () => Promise<void>;
+  error: string | null;
 }
 
 /**
- * Interface mở rộng cho JWT để chứa thông tin tùy chỉnh
+ * Props cho AuthProvider
  */
-export interface ExtendedJWT extends JWT {
-  user?: SessionUser;
-  accessToken?: string;
-  refreshToken?: string;
-  expiresAt?: number;
-  error?: string;
-}
-
-/**
- * Interface mở rộng cho User để chứa thông tin tùy chỉnh
- */
-export interface ExtendedUser extends User {
-  username?: string;
-  firstName?: string;
-  lastName?: string;
-  accessToken?: string;
-  refreshToken?: string;
+export interface AuthProviderProps {
+  children: ReactNode;
 }

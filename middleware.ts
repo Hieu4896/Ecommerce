@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
 
 /**
  * Middleware để bảo vệ routes và xử lý redirect logic
@@ -9,16 +8,13 @@ import { getToken } from "next-auth/jwt";
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Lấy token từ request để kiểm tra authentication status
-  const token = await getToken({
-    req: request,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
+  // Lấy access token từ cookies để kiểm tra authentication status
+  const accessToken = request.cookies.get("access_token")?.value;
 
-  console.log("token", token);
+  console.log("accessToken", accessToken);
 
   // Xác định user đã xác thực hay chưa
-  const isAuthenticated = !!token;
+  const isAuthenticated = !!accessToken;
 
   // Danh sách các routes công khai (không cần authentication)
   const publicRoutes = ["/login", "/api/auth"];

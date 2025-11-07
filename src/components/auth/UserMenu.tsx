@@ -7,35 +7,49 @@ import {
   DropdownMenuTrigger,
 } from "@components/dropdown-menu";
 import { LogOutIcon, ShoppingCartIcon } from "lucide-react";
-import { Session } from "next-auth";
-import { signOut } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
+import { useAuth } from "@hooks/useAuth";
 
-export function UserMenu({
-  status,
-  session,
-}: {
-  status: "authenticated" | "loading" | "unauthenticated";
-  session: Session | null;
-}) {
-  if (status === "loading") {
+export function UserMenu() {
+  const { user, logout, isLoading } = useAuth();
+
+  if (isLoading) {
     return <div className="w-8 h-8 bg-gray-300 rounded-full animate-pulse"></div>;
   }
+
+  if (!user) {
+    return null;
+  }
+
   /**
    * Xử lý đăng xuất
    */
-  const handleSignOut = () => {
-    signOut({ callbackUrl: "/login" });
+  const handleSignOut = async () => {
+    try {
+      // Gọi API route để xóa cookies
+      await fetch("/api/auth/logout", {
+        method: "POST",
+      });
+
+      // Cập nhật state trong context
+      await logout();
+
+      // Chuyển hướng đến trang đăng nhập
+      window.location.href = "/login";
+    } catch (error) {
+      console.error("Lỗi khi đăng xuất:", error);
+    }
   };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button className="flex items-center gap-2">
-          {session?.user?.image && (
+          {user?.image && (
             <Image
-              src={session.user.image}
-              alt={session.user.name || "User"}
+              src={user.image}
+              alt={user.name || "User"}
               className="w-8 h-auto rounded-full object-cover"
               width={32}
               height={32}
@@ -44,7 +58,7 @@ export function UserMenu({
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="start">
-        <DropdownMenuLabel> {session?.user?.name || "User"}</DropdownMenuLabel>
+        <DropdownMenuLabel>{user.name || "User"}</DropdownMenuLabel>
         <DropdownMenuGroup>
           <DropdownMenuItem>
             <Link href="/cart" className="w-5 h-5 aspect-auto relative">
