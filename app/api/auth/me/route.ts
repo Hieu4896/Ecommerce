@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Gọi DummyJSON API để xác thực token
-    const response = await fetch("https://dummyjson.com/auth/me", {
+    const response = await fetch(`${process.env.DUMMYJSON_API_URL}/auth/me`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,

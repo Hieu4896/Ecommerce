@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { isTokenExpired } from "@utils/token.util";
+import { getAccessTokenFromRequest } from "@utils/cookie.util";
+import { handleTokenRefreshInMiddleware } from "@utils/token.util";
 
 /**
  * Middleware để bảo vệ routes và xử lý redirect logic
@@ -9,15 +12,26 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Lấy access token từ cookies để kiểm tra authentication status
-  const accessToken = request.cookies.get("access_token")?.value;
-
-  console.log("accessToken", accessToken);
+  const accessToken = getAccessTokenFromRequest(request);
 
   // Xác định user đã xác thực hay chưa
-  const isAuthenticated = !!accessToken;
+  let isAuthenticated = !!accessToken;
+
+  const response = NextResponse.next();
+
+  // Nếu có access token, kiểm tra xem nó có hết hạn không
+  if (accessToken && isTokenExpired(accessToken)) {
+    // Sử dụng utility function với error handling
+    const refreshSuccess = await handleTokenRefreshInMiddleware(request, response);
+
+    // Cập nhật authentication status dựa trên kết quả refresh
+    if (!refreshSuccess) {
+      isAuthenticated = false;
+    }
+  }
 
   // Danh sách các routes công khai (không cần authentication)
-  const publicRoutes = ["/login", "/api/auth"];
+  const publicRoutes = ["/", "/login", "/api/auth"];
 
   // Kiểm tra nếu route là public route
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
@@ -35,25 +49,14 @@ export async function middleware(request: NextRequest) {
   }
 
   // Xử lý redirect logic cho homepage
-  if (pathname === "/") {
+  if (pathname === "/" || pathname === "/login") {
     // Nếu đã xác thực, redirect đến trang products
     if (isAuthenticated) {
       const url = new URL("/products", request.url);
       return NextResponse.redirect(url);
     }
     // Nếu chưa xác thực, cho phép truy cập homepage (sẽ hiển thị login form)
-    return NextResponse.next();
-  }
-
-  // Xử lý redirect logic cho login page
-  if (pathname === "/login") {
-    // Nếu đã xác thực, redirect đến trang products
-    if (isAuthenticated) {
-      const url = new URL("/products", request.url);
-      return NextResponse.redirect(url);
-    }
-    // Nếu chưa xác thực, cho phép truy cập login page
-    return NextResponse.next();
+    return response;
   }
 
   // Bảo vệ các routes trong (authenticated) folder
@@ -66,16 +69,16 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
     // Nếu đã xác thực, cho phép truy cập
-    return NextResponse.next();
+    return response;
   }
 
   // Cho phép truy cập các routes công khai khác
   if (isPublicRoute) {
-    return NextResponse.next();
+    return response;
   }
 
   // Mặc định cho phép truy cập
-  return NextResponse.next();
+  return response;
 }
 
 /**

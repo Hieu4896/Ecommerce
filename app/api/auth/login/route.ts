@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     const { username, password, expiresInMins = 60 } = body;
 
     // Gọi DummyJSON API từ server-side
-    const response = await fetch("https://dummyjson.com/auth/login", {
+    const response = await fetch(`${process.env.DUMMYJSON_API_URL}/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

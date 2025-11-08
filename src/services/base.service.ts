@@ -5,7 +5,7 @@ import {
   createNetworkError,
   createUnknownError,
   createFallbackError,
-} from "@src/utils/errorUtils";
+} from "@utils/error.util";
 
 /**
  * Base Service Class với các phương thức chung và xử lý lỗi

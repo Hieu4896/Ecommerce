@@ -1,6 +1,6 @@
 import { ProductsQueryParams, Product } from "@src/types/product.type";
 import BaseService from "./base.service";
-import { filterByTitle } from "@src/utils/filterUtils";
+import { filterByTitle } from "@utils/filter.util";
 
 /**
  * Product Service Class kế thừa từ Base Service

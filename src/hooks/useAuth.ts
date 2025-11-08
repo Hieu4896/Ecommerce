@@ -2,7 +2,7 @@
 
 import { useContext } from "react";
 import { AuthContextType } from "@src/types/auth.type";
-import { AuthContext } from "@providers/auth.provider";
+import { AuthContext } from "@src/providers/auth.provider";
 
 /**
  * Hook để sử dụng AuthContext

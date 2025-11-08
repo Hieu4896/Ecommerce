@@ -27,7 +27,8 @@
       "@hooks/*": ["src/hooks/*"],
       "@providers/*": ["src/providers/*"],
       "@utils/*": ["src/utils/*"],
-      "@services/*": ["src/services/*"]
+      "@services/*": ["src/services/*"],
+      "@constants/*": ["src/constants/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

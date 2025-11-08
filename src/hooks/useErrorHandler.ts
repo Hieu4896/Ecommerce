@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { getErrorMessage } from "@src/utils/errorUtils";
+import { getErrorMessage } from "@utils/error.util";
 
 /**
  * Custom hook để xử lý lỗi một cách tập trung và tái sử dụng
