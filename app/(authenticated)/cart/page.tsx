@@ -85,32 +85,42 @@ export default function CartPage() {
 
         {/* Giỏ hàng có sản phẩm */}
         {shouldShowCartWithItems && (
-          <>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Danh sách sản phẩm trong giỏ hàng */}
-              <div className="lg:col-span-2">
-                <Card className="overflow-hidden">
-                  <CardHeader className="px-0">
-                    <CardTitle className="flex items-center justify-between">
-                      <h2>Sản phẩm ({cart.products.length})</h2>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4 px-0">
-                    {cart.products.map((cartItem) => (
-                      <CartItem
-                        key={cartItem.id}
-                        cartItem={cartItem}
-                        isLoading={cartLoading}
-                        onRemove={handleRemoveItem}
-                        onQuantityChange={handleQuantityChange}
-                      />
-                    ))}
-                  </CardContent>
-                </Card>
-              </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Danh sách sản phẩm trong giỏ hàng */}
+            <div className="lg:col-span-2">
+              <Card className="overflow-hidden">
+                <CardHeader className="px-0">
+                  <CardTitle className="flex items-center justify-between">
+                    <h2>Sản phẩm ({cart.products.length})</h2>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4 px-0">
+                  {cart.products.map((cartItem) => (
+                    <CartItem
+                      key={cartItem.id}
+                      cartItem={cartItem}
+                      isLoading={cartLoading}
+                      onRemove={handleRemoveItem}
+                      onQuantityChange={handleQuantityChange}
+                    />
+                  ))}
+                </CardContent>
+              </Card>
 
-              {/* Tóm tắt giỏ hàng */}
-              <div className="lg:col-span-1">
+              {/* Nút quay lại trang sản phẩm */}
+              <div className="mt-6">
+                <Link href="/products">
+                  <Button variant="outline" className="w-full">
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Tiếp tục mua sắm
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+            {/* Tóm tắt giỏ hàng */}
+            <div className="lg:col-span-1">
+              <div className="sticky top-4">
                 <CartSummary
                   cart={cart}
                   onClearCart={handleClearCart}
@@ -119,17 +129,7 @@ export default function CartPage() {
                 />
               </div>
             </div>
-
-            {/* Nút quay lại trang sản phẩm */}
-            <div className="mt-4">
-              <Link href="/products">
-                <Button variant="outline" className="w-full">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Tiếp tục mua sắm
-                </Button>
-              </Link>
-            </div>
-          </>
+          </div>
         )}
       </div>
     </div>

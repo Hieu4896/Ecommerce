@@ -25,9 +25,7 @@ export const CartItem = ({
   onRemove,
   onQuantityChange,
 }: CartItemProps) => {
-  console.log("cartItem", cartItem);
-
-  // Xử lý khi thay đổi số lượng
+  // Xử lý khi thay đổi số lượng bằng input
   const handleQuantityChange = (newQuantity: number) => {
     if (newQuantity < 1) return;
     onQuantityChange?.(cartItem.id, newQuantity);
@@ -68,12 +66,9 @@ export const CartItem = ({
           <div className="flex-1 min-w-0">
             <h3 className="font-medium text-primary-foreground truncate">{cartItem.title}</h3>
             <div className="flex items-center gap-2 mt-2">
-              <span className="text-lg font-semibold text-success">${cartItem.price}</span>
-              {cartItem.discountPercentage && (
-                <span className="text-lg text-muted-foreground line-through">
-                  ${(cartItem.price * (1 - cartItem.discountPercentage / 100)).toFixed(2)}
-                </span>
-              )}
+              <span className="text-lg font-semibold text-success">
+                ${cartItem.price.toFixed(2)}
+              </span>
             </div>
           </div>
 
@@ -122,11 +117,11 @@ export const CartItem = ({
               </Button>
             </div>
 
-            <div className="text-right">
-              <span className="text-sm text-muted-foreground">Thành tiền:</span>
-              <div className="font-semibold text-primary-foreground">
-                ${cartItem.discountedTotal.toFixed(2)}
-              </div>
+            <div className="font-semibold flex gap-3 text-primary-foreground">
+              <span className="text-muted-foreground line-through">
+                ${cartItem.total.toFixed(2)}
+              </span>
+              <span>${cartItem.discountedTotal.toFixed(2)}</span>
             </div>
           </div>
         </div>

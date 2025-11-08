@@ -207,9 +207,6 @@ export default function ProductsPage() {
                 <h4 className="text-lg font-medium text-gray-800 mb-2">
                   Không tìm thấy sản phẩm nào
                 </h4>
-                <p className="text-gray-600 mb-4">
-                  Thử tìm kiếm với từ khóa khác hoặc kiểm tra lỗi chính tả
-                </p>
               </div>
             )}
           </div>

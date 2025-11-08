@@ -5,7 +5,6 @@ import { Button } from "@components/button";
 import { Input } from "@components/input";
 import { Product } from "@src/types/product.type";
 import { useCart } from "@src/hooks/useCart";
-import toast from "react-hot-toast";
 
 /**
  * Component hiển thị một sản phẩm với nút Add to Cart
@@ -56,15 +55,7 @@ export const ProductItem = ({ product }: { product: Product }) => {
             disabled={isLoading}
             onClick={async () => {
               const quantity = Number(quantityRef.current?.value || 1);
-              try {
-                await addToCart(product.id, quantity);
-                // Hiển thị thông báo thành công (có thể thêm toast notification ở đây)
-                toast.success(`Đã thêm ${quantity} sản phẩm ${product.title} vào giỏ hàng`);
-              } catch (err) {
-                toast.error("Lỗi khi thêm vào giỏ hàng");
-                // Hiển thị thông báo lỗi (có thể thêm toast notification ở đây)
-                console.error("Lỗi khi thêm vào giỏ hàng:", err);
-              }
+              await addToCart(product, quantity);
             }}
           >
             {isLoading ? "Adding..." : "Add to Cart"}

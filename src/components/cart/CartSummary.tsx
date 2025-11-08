@@ -45,13 +45,13 @@ export const CartSummary = ({
   };
 
   const totalItems = getTotalItems();
-  const subtotal = cart?.total || 0;
-  const shipping = subtotal > 100 ? 0 : 10;
-  const tax = subtotal * 0.08;
+  const subtotal = cart?.discountedTotal || 0;
+  const shipping = subtotal > 100 ? 0 : 10; // Phí vận chuyển
+  const tax = subtotal * 0.08; // Thuế
   const total = subtotal + shipping + tax;
 
   return (
-    <Card className="w-full">
+    <Card className="w-full sticky top-4 bg-primary-foreground">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <ShoppingBag className="h-5 w-5" />
@@ -76,6 +76,7 @@ export const CartSummary = ({
         {/* Các nút hành động */}
         <div className="space-y-4">
           <Button
+            variant="secondary"
             className="w-full"
             onClick={onCheckout}
             disabled={!cart || totalItems === 0 || isLoading}
@@ -84,7 +85,7 @@ export const CartSummary = ({
           </Button>
 
           <Button
-            variant="outline"
+            variant="default"
             className="w-full"
             onClick={onClearCart}
             disabled={!cart || totalItems === 0 || isLoading}
