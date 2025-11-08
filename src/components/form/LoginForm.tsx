@@ -45,8 +45,8 @@ export default function LoginForm({ callbackUrl = "/products" }: LoginFormProps)
   } = useForm<LoginFormData>({
     resolver: yupResolver(loginSchema),
     defaultValues: {
-      username: "emilys",
-      password: "emilyspass",
+      username: "carterb",
+      password: "carterbpass",
     },
   });
 
@@ -80,7 +80,7 @@ export default function LoginForm({ callbackUrl = "/products" }: LoginFormProps)
         <div className="text-center space-y-4">
           <h1>Đăng nhập vào tài khoản</h1>
           <p className="text-sm text-primary-foreground">
-            Sử dụng tài khoản test: emilys / emilyspass
+            Sử dụng tài khoản test: carterb / carterbpass
           </p>
         </div>
 

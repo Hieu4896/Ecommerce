@@ -10,9 +10,20 @@ import { LogOutIcon, ShoppingCartIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "@hooks/useAuth";
+import { useCart } from "@hooks/useCart";
+import { useEffect } from "react";
 
 export function UserMenu() {
   const { user, logout, isLoading } = useAuth();
+  const { carts, fetchUserCart } = useCart();
+  /**
+   * Fetch cart data khi component mount và khi user thay đổi
+   */
+  useEffect(() => {
+    if (user) {
+      fetchUserCart();
+    }
+  }, [user, fetchUserCart]);
 
   if (isLoading) {
     return <div className="w-8 h-8 bg-gray-300 rounded-full animate-pulse"></div>;
@@ -27,11 +38,6 @@ export function UserMenu() {
    */
   const handleSignOut = async () => {
     try {
-      // Gọi API route để xóa cookies
-      await fetch("/api/auth/logout", {
-        method: "POST",
-      });
-
       // Cập nhật state trong context
       await logout();
 
@@ -63,6 +69,11 @@ export function UserMenu() {
           <DropdownMenuItem>
             <Link href="/cart" className="w-5 h-5 aspect-auto relative">
               <ShoppingCartIcon />
+              {carts && carts.length > 0 && (
+                <span className="bg-primary text-primary-foreground text-[10px] font-semibold rounded-full w-4 h-4 absolute -top-3 -right-1 text-center">
+                  {carts.reduce((total, cart) => total + cart.totalQuantity, 0)}
+                </span>
+              )}
             </Link>
             <span>Giỏ hàng</span>
           </DropdownMenuItem>

@@ -24,14 +24,18 @@ class CartService extends BaseService {
    * @param userId - ID của người dùng
    * @returns Promise<Cart[]> - Danh sách giỏ hàng của người dùng
    */
-  async getCartsByUser(userId: number): Promise<Cart[]> {
-    this.logDebug("Lấy giỏ hàng theo userId", { userId });
-
+  async getCartsByUser(
+    userId: number,
+  ): Promise<{ carts: Cart[]; total: number; skip: number; limit: number }> {
     try {
       const url = this.buildUrl(`/carts/user/${userId}`);
-      const response = await this.swrFetcherWithTimeout<Cart[]>(url);
-
-      this.logDebug("Lấy giỏ hàng thành công", { userId, count: response.length });
+      const response = await this.swrFetcherWithTimeout<{
+        carts: Cart[];
+        total: number;
+        skip: number;
+        limit: number;
+      }>(url);
+      this.logDebug("Lấy giỏ hàng thành công", { userId, count: response.carts.length });
       return response;
     } catch (error) {
       this.logError(

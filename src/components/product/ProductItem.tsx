@@ -1,18 +1,18 @@
-import { Product } from "@src/types/product.type";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@src/components/ui/card";
-import { Button } from "@src/components/ui/button";
-import Image from "next/image";
-import { useCartStore } from "@src/stores/useCartStore";
-import { Input } from "../ui/input";
 import { useRef } from "react";
+import Image from "next/image";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@components/card";
+import { Button } from "@components/button";
+import { Input } from "@components/input";
+import { Product } from "@src/types/product.type";
+import { useCart } from "@src/hooks/useCart";
+import toast from "react-hot-toast";
 
 /**
  * Component hiển thị một sản phẩm với nút Add to Cart
  */
 export const ProductItem = ({ product }: { product: Product }) => {
-  const { addNewCart } = useCartStore();
-
   const quantityRef = useRef<HTMLInputElement>(null);
+  const { addToCart, isLoading } = useCart();
 
   return (
     <Card className="w-full border-border hover:border-accent transition-colors duration-300 ease-out">
@@ -53,19 +53,21 @@ export const ProductItem = ({ product }: { product: Product }) => {
         <div className="flex items-center justify-between gap-4">
           <Button
             className="flex-1"
-            onClick={() => {
+            disabled={isLoading}
+            onClick={async () => {
               const quantity = Number(quantityRef.current?.value || 1);
-              const cartItem = {
-                id: product.id,
-                quantity,
-              };
-              addNewCart({
-                userId: 1,
-                products: [cartItem],
-              });
+              try {
+                await addToCart(product.id, quantity);
+                // Hiển thị thông báo thành công (có thể thêm toast notification ở đây)
+                toast.success(`Đã thêm ${quantity} sản phẩm ${product.title} vào giỏ hàng`);
+              } catch (err) {
+                toast.error("Lỗi khi thêm vào giỏ hàng");
+                // Hiển thị thông báo lỗi (có thể thêm toast notification ở đây)
+                console.error("Lỗi khi thêm vào giỏ hàng:", err);
+              }
             }}
           >
-            Add to Cart
+            {isLoading ? "Adding..." : "Add to Cart"}
           </Button>
 
           <Input

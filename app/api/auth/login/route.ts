@@ -20,6 +20,7 @@ export async function POST(request: NextRequest) {
         password,
         expiresInMins,
       }),
+      credentials: "include",
     });
 
     if (!response.ok) {

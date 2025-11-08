@@ -9,10 +9,14 @@ import { handleTokenRefreshInMiddleware } from "@utils/token.util";
  * Bảo vệ các routes trong (authenticated) folder và xử lý redirect dựa trên authentication status
  */
 export async function middleware(request: NextRequest) {
+  console.log("middleware đang khởi động");
+
   const { pathname } = request.nextUrl;
 
   // Lấy access token từ cookies để kiểm tra authentication status
   const accessToken = getAccessTokenFromRequest(request);
+
+  console.log("accessToken", accessToken);
 
   // Xác định user đã xác thực hay chưa
   let isAuthenticated = !!accessToken;
@@ -23,9 +27,9 @@ export async function middleware(request: NextRequest) {
   if (accessToken && isTokenExpired(accessToken)) {
     // Sử dụng utility function với error handling
     const refreshSuccess = await handleTokenRefreshInMiddleware(request, response);
-
     // Cập nhật authentication status dựa trên kết quả refresh
     if (!refreshSuccess) {
+      console.log("Làm mới token thất bại, xóa cookies");
       isAuthenticated = false;
     }
   }
@@ -35,18 +39,6 @@ export async function middleware(request: NextRequest) {
 
   // Kiểm tra nếu route là public route
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
-
-  // Kiểm tra nếu route là API route
-  const isApiRoute = pathname.startsWith("/api");
-
-  // Kiểm tra nếu route là static asset
-  const isStaticAsset =
-    pathname.startsWith("/_next") || pathname.startsWith("/favicon") || pathname.includes(".");
-
-  // Bỏ qua middleware cho API routes và static assets
-  if (isApiRoute || isStaticAsset) {
-    return NextResponse.next();
-  }
 
   // Xử lý redirect logic cho homepage
   if (pathname === "/" || pathname === "/login") {
@@ -86,15 +78,5 @@ export async function middleware(request: NextRequest) {
  * Bỏ qua các routes không cần kiểm tra như API routes, static assets, etc.
  */
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder files
-     */
-    "/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)",
-  ],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)"],
 };

@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
+      credentials: "include",
     });
 
     if (!response.ok) {

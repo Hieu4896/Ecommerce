@@ -1,0 +1,3 @@
+const EXPIRESINMINS = 60;
+
+export { EXPIRESINMINS };

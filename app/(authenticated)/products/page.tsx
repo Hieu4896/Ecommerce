@@ -26,8 +26,6 @@ export default function ProductsPage() {
     limit: 20, // Mạc định 20 items cho infinite scroll
     searchQuery, // Truyền state vào hook
   });
-  console.log("products", products);
-
   // Áp dụng hook infinite scroll để tự động tải thêm dữ liệu
   const infiniteScrollRef = useInfiniteScroll(
     !isReachingEnd && products.length >= 20, // hasMore - còn dữ liệu để tải và đã có ít nhất 1 trang
