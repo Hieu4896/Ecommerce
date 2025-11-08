@@ -127,6 +127,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       throw error;
     } finally {
       setIsLoggingOut(false);
+      window.location.href = "/login";
     }
   };
 

@@ -2,8 +2,14 @@
  * Interface cho một item trong giỏ hàng
  */
 export interface CartItem {
-  id: number; // ID của sản phẩm
-  quantity: number; // Số lượng
+  id: number;
+  title: string;
+  price: number;
+  quantity: number;
+  total: number;
+  discountPercentage: number;
+  discountedTotal: number;
+  thumbnail: string;
 }
 
 /**
@@ -14,9 +20,9 @@ export interface Cart {
   userId: number; // ID của người dùng
   products: CartItem[]; // Danh sách sản phẩm trong giỏ hàng
   total: number; // Tổng giá trị giỏ hàng
+  discountedTotal: number; // Tổng giá trị sau giảm giá
   totalProducts: number; // Tổng số sản phẩm
   totalQuantity: number; // Tổng số lượng sản phẩm
-  discountedTotal: number; // Tổng giá trị sau giảm giá
 }
 
 export interface CartStore {
@@ -31,7 +37,15 @@ export interface CartStore {
  */
 export interface AddCartRequest {
   userId: number;
-  products: CartItem[];
+  products: AddCartItem[];
+}
+
+/**
+ * Interface cho sản phẩm khi thêm vào giỏ hàng (chỉ cần các trường cơ bản)
+ */
+export interface AddCartItem {
+  id: number;
+  quantity: number;
 }
 
 /**

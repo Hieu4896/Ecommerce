@@ -3,7 +3,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getRefreshTokenFromRequest, setAuthCookies, clearAuthCookies } from "./cookie.util";
+import { setAuthCookies, clearAuthCookies } from "./cookie.util";
 
 /**
  * Kiểm tra xem JWT token có hết hạn không bằng cách decode payload
