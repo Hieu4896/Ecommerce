@@ -3,7 +3,8 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { SessionUser, LoginCredentials } from "@src/types/auth.type";
-import { toSessionUser } from "@utils/auth.util";
+import { authService } from "@services/auth.service";
+import { getErrorMessage } from "@src/utils/error.util";
 
 /**
  * Interface cho state của giỏ hàng
@@ -26,7 +27,7 @@ interface AuthActions {
   setLoggingOut: (isLoggingOut: boolean) => void;
   setError: (error: string | null) => void;
   clearAuth: () => void;
-  restoreSessionFromCookies: () => Promise<boolean>;
+  restoreSession: () => Promise<boolean>;
   login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => Promise<void>;
   refreshAuth: () => Promise<void>;
@@ -62,22 +63,8 @@ export const useAuthStore = create<AuthStore>()(
         set({ isLoading: true, error: null });
 
         try {
-          // Gọi API route để đăng nhập
-          const response = await fetch("/api/auth/login", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(credentials),
-          });
-
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.error || "Đăng nhập thất bại");
-          }
-
-          const authResponse = await response.json();
-          const sessionUser = toSessionUser(authResponse);
+          // Sử dụng AuthService để đăng nhập
+          const sessionUser = await authService.login(credentials);
 
           // Cập nhật state
           set({
@@ -87,7 +74,7 @@ export const useAuthStore = create<AuthStore>()(
             error: null,
           });
         } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : "Đăng nhập thất bại";
+          const errorMessage = getErrorMessage(error);
           set({
             error: errorMessage,
             isLoading: false,
@@ -103,23 +90,13 @@ export const useAuthStore = create<AuthStore>()(
         set({ isLoggingOut: true, error: null });
 
         try {
-          // Gọi API route để xóa cookies
-          const response = await fetch("/api/auth/logout", {
-            method: "POST",
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            // Nếu API trả về flag clearLocalStorage, xóa localStorage
-            if (data.clearLocalStorage) {
-              localStorage.removeItem("auth-storage");
-            }
-          }
+          // Sử dụng AuthService để đăng xuất
+          await authService.logout();
 
           // Xóa state trong store
           get().clearAuth();
         } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : "Đăng xuất thất bại";
+          const errorMessage = getErrorMessage(error);
           set({
             error: errorMessage,
             isLoggingOut: false,
@@ -139,23 +116,8 @@ export const useAuthStore = create<AuthStore>()(
         set({ isLoading: true, error: null });
 
         try {
-          // Gọi API route refresh để làm mới token
-          const response = await fetch("/api/auth/refresh", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          });
-
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.error || "Làm mới token thất bại");
-          }
-
-          // Lấy lại thông tin user sau khi làm mới token
-          const userInfoResponse = await fetch("/api/auth/me");
-          const userInfo = await userInfoResponse.json();
-          const sessionUser = toSessionUser(userInfo);
+          // Sử dụng AuthService để làm mới token
+          const sessionUser = await authService.refreshToken();
 
           set({
             user: sessionUser,
@@ -164,7 +126,7 @@ export const useAuthStore = create<AuthStore>()(
             error: null,
           });
         } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : "Làm mới token thất bại";
+          const errorMessage = getErrorMessage(error);
           set({
             error: errorMessage,
             isLoading: false,
@@ -195,31 +157,28 @@ export const useAuthStore = create<AuthStore>()(
       /**
        * Khôi phục session từ cookies nếu localStorage trống
        */
-      restoreSessionFromCookies: async (): Promise<boolean> => {
+      restoreSession: async (): Promise<boolean> => {
         // Kiểm tra xem localStorage có trống không
         const hasLocalStorageData = localStorage.getItem("auth-storage");
 
         if (!hasLocalStorageData) {
           try {
-            // Thử gọi API /auth/me để kiểm tra cookies
-            const response = await fetch("/api/auth/me");
+            // Lấy thông tin user sau khi khôi phục thành công
+            const sessionUser = await authService.getCurrentUser();
+            console.log("sessionUser", sessionUser);
 
-            if (response.ok) {
-              const userInfo = await response.json();
-              const sessionUser = toSessionUser(userInfo);
-
-              // Khôi phục lại state trong store
+            if (sessionUser) {
+              // Cập nhật state
               set({
                 user: sessionUser,
                 isAuthenticated: true,
                 isLoading: false,
               });
-
-              console.log("Đã khôi phục session từ cookies");
-              return true;
             }
+            return true;
           } catch (error) {
-            console.log("Không thể khôi phục session từ cookies:", error);
+            console.log("Không thể khôi phục session từ cookies:", getErrorMessage(error));
+            return false;
           }
         }
         return false;
@@ -229,13 +188,30 @@ export const useAuthStore = create<AuthStore>()(
       name: "auth-storage", // Tên key trong localStorage
       storage: createJSONStorage(() => localStorage),
       // Chỉ persist các trường cần thiết
-      partialize: (state) => ({
-        user: state.user,
-        isAuthenticated: state.isAuthenticated,
-      }),
+      partialize: (state) => {
+        // Nếu không có user hoặc chưa authenticated, không persist gì cả
+        if (!state.user || !state.isAuthenticated) {
+          return undefined; // Sẽ xóa key khỏi localStorage
+        }
+
+        return {
+          user: state.user,
+          isAuthenticated: state.isAuthenticated,
+        };
+      },
       // Xử lý khi hydrate state từ localStorage
       onRehydrateStorage: () => (state) => {
-        // console.log("Auth state hydrated from localStorage:", state);
+        // Nếu không có state hoặc không có user, reset về mặc định
+        if (!state || !state.user) {
+          return {
+            user: null,
+            isAuthenticated: false,
+            isLoading: false,
+            isLoggingOut: false,
+            error: null,
+          };
+        }
+        return state;
       },
     },
   ),

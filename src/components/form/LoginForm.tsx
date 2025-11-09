@@ -10,6 +10,7 @@ import { Label } from "@components/label";
 import { LoginFormProps } from "@src/types/auth.type";
 import { useAuth } from "@hooks/useAuth";
 import { loginSchema } from "../schema/auth.schema";
+import { getErrorMessage } from "@src/utils/error.util";
 
 /**
  * Type cho form data dựa trên schema
@@ -25,13 +26,12 @@ export default function LoginForm({ callbackUrl = "/products" }: LoginFormProps)
   const [showPassword, setShowPassword] = useState(false);
 
   // Lấy hàm login từ AuthContext
-  const { login, isLoading, error } = useAuth();
+  const { login, isLoading, error, setError } = useAuth();
 
   // Khởi tạo React Hook Form với Yup resolver
   const {
     register,
     handleSubmit,
-    setError: setFormError,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormData>({
     resolver: yupResolver(loginSchema),
@@ -55,13 +55,11 @@ export default function LoginForm({ callbackUrl = "/products" }: LoginFormProps)
       });
 
       // Đăng nhập thành công, chuyển hướng đến trang được chỉ định trong callbackUrl
-      // Sử dụng window.location.href để tránh redirect loop
       window.location.href = callbackUrl;
     } catch (error) {
-      // Sử dụng setError từ react-hook-form để hiển thị lỗi ở cấp độ form
-      setFormError("root", {
-        message: error instanceof Error ? error.message : "Tên đăng nhập hoặc mật khẩu không đúng",
-      });
+      const errorMessage = getErrorMessage(error);
+      console.log("errorMessage", errorMessage);
+      setError(errorMessage);
     }
   };
 
@@ -144,12 +142,6 @@ export default function LoginForm({ callbackUrl = "/products" }: LoginFormProps)
               )}
             </div>
           </div>
-
-          {errors.root && (
-            <div className="bg-destructive/10 border border-destructive/20 text-destructive p-3 rounded-md text-sm">
-              {errors.root.message}
-            </div>
-          )}
 
           {error && (
             <div className="bg-destructive/10 border border-destructive/20 text-destructive p-3 rounded-md text-sm">

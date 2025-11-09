@@ -1,4 +1,4 @@
-import { ProductsQueryParams, Product } from "@src/types/product.type";
+import { ProductsQueryParams, Product, ProductsResponse } from "@src/types/product.type";
 import BaseService from "./base.service";
 import { filterByTitle } from "@utils/filter.util";
 
@@ -64,6 +64,44 @@ class ProductService extends BaseService {
    */
   public filterProductsByTitle(products: Product[], query: string): Product[] {
     return filterByTitle(products, query);
+  }
+
+  /**
+   * Lấy danh sách sản phẩm với retry mechanism
+   * @param params - Tham số query (limit, skip, select)
+   * @param retries - Số lần retry tối đa
+   * @param delay - Độ trễ giữa các lần retry (ms)
+   * @returns Promise với danh sách sản phẩm
+   */
+  public async getProductsWithRetry(
+    params?: ProductsQueryParams,
+    retries: number = 3,
+    delay: number = 1000,
+  ): Promise<ProductsResponse> {
+    const url = this.getProductsUrl(params);
+    this.logDebug("Fetching products with retry", { url, retries, delay });
+
+    return await this.fetchGetWithRetry<ProductsResponse>(url, retries, delay);
+  }
+
+  /**
+   * Tìm kiếm sản phẩm theo từ khóa với retry mechanism
+   * @param query - Từ khóa tìm kiếm
+   * @param params - Tham số query bổ sung (limit, skip, select)
+   * @param retries - Số lần retry tối đa
+   * @param delay - Độ trễ giữa các lần retry (ms)
+   * @returns Promise với kết quả tìm kiếm
+   */
+  public async searchProductsWithRetry(
+    query: string,
+    params?: Omit<ProductsQueryParams, "q">,
+    retries: number = 3,
+    delay: number = 1000,
+  ): Promise<ProductsResponse> {
+    const url = this.getSearchProductsUrl(query, params);
+    this.logDebug("Searching products with retry", { url, query, retries, delay });
+
+    return await this.fetchGetWithRetry<ProductsResponse>(url, retries, delay);
   }
 }
 

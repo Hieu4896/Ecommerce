@@ -27,45 +27,44 @@ export const createApiError = (
  */
 export const getErrorMessage = (error: unknown): string => {
   if (!error) return "";
-
   // Nếu là Error object với status và info (theo SWR best practices)
   if (error && typeof error === "object" && ("status" in error || "message" in error)) {
-    const swrError = error as Error & {
+    const errors = error as Error & {
       info?: { message?: string; [key: string]: unknown };
       status?: number;
     };
 
     // Ưu tiên hiển thị message từ error.info nếu có
-    if (swrError.info?.message) {
-      return swrError.info.message;
+    if (errors.info?.message) {
+      return errors.info.message;
     }
 
     // Xử lý các loại lỗi cụ thể theo status code
-    if (swrError.status === 0) {
+    if (errors.status === 0) {
       return "Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.";
     }
 
-    if (swrError.status === 404) {
+    if (errors.status === 404) {
       return "Không tìm thấy dữ liệu yêu cầu.";
     }
 
-    if (swrError.status === 408) {
+    if (errors.status === 408) {
       return "Request hết thời gian chờ. Vui lòng thử lại.";
     }
 
-    if (swrError.status === 429) {
+    if (errors.status === 429) {
       return "Quá nhiều yêu cầu. Vui lòng thử lại sau.";
     }
 
-    if (swrError.status && swrError.status >= 400 && swrError.status < 500) {
+    if (errors.status && errors.status >= 400 && errors.status < 500) {
       return "Yêu cầu không hợp lệ. Vui lòng thử lại.";
     }
 
-    if (swrError.status && swrError.status >= 500) {
+    if (errors.status && errors.status >= 500) {
       return "Lỗi máy chủ. Vui lòng thử lại sau.";
     }
 
-    return swrError.message || "Đã xảy ra lỗi. Vui lòng thử lại.";
+    return errors.message || "Đã xảy ra lỗi. Vui lòng thử lại.";
   }
 
   // Xử lý các loại lỗi khác

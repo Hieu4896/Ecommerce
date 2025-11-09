@@ -1,8 +1,9 @@
-import useSWRInfinite, { SWRInfiniteConfiguration } from "swr/infinite";
+import useSWRInfinite from "swr/infinite";
 import { useMemo, useCallback } from "react";
 import { productService } from "@services/product.service";
 import { ProductsResponse } from "@src/types/product.type";
-import { useErrorHandler } from "./useErrorHandler";
+import swrConfig from "@src/config/swr.config";
+import { getErrorMessage } from "@utils/error.util";
 
 export const useProducts = (params: { limit?: number; searchQuery?: string } = {}) => {
   const { limit = 20, searchQuery } = params;
@@ -14,7 +15,10 @@ export const useProducts = (params: { limit?: number; searchQuery?: string } = {
    * @returns Key cho SWR hoặc null nếu không thể tải thêm
    */
   const getKey = useMemo(() => {
-    return (pageIndex: number, previousPageData: ProductsResponse | null): string | null => {
+    return (
+      pageIndex: number,
+      previousPageData: ProductsResponse | null,
+    ): (string | Record<string, number>)[] | null => {
       // Nếu đã có dữ liệu từ trang trước và không còn sản phẩm nào, trả về null
       if (previousPageData && previousPageData.products.length === 0) {
         return null;
@@ -23,48 +27,42 @@ export const useProducts = (params: { limit?: number; searchQuery?: string } = {
       // Tính toán skip dựa trên trang hiện tại và limit
       const skip = pageIndex * limit;
 
-      // Xây dựng URL dựa trên loại request
+      // Trả về mảng chứa thông tin để fetch
       if (searchQuery) {
-        // Nếu có search query, sử dụng endpoint search
-        return productService.getSearchProductsUrl(searchQuery, {
-          limit,
-          skip,
-        });
+        // Nếu có search query, sử dụng phương thức search với retry
+        return ["searchWithRetry", searchQuery, { limit, skip }];
       } else {
-        // Mặc định sử dụng endpoint products thông thường
-        return productService.getProductsUrl({ limit, skip });
+        // Mặc định sử dụng phương thức get products với retry
+        return ["getWithRetry", { limit, skip }];
       }
     };
   }, [limit, searchQuery]);
 
-  // Sử dụng error handler hook để xử lý lỗi tập trung
-  const { getErrorMessage, logError } = useErrorHandler();
+  const fetcher = useCallback(
+    async (key: (string | Record<string, number>)[]): Promise<ProductsResponse> => {
+      const [method, ...params] = key;
 
-  // Custom fetcher với xử lý lỗi nâng cao
-  const fetcherWithErrorHandling = useCallback(
-    async (url: string): Promise<ProductsResponse> => {
-      try {
-        // Sử dụng fetcher với retry cho các lỗi mạng
-        return await productService.swrFetcherWithRetry<ProductsResponse>(url);
-      } catch (error) {
-        // Log lỗi để debug sử dụng error handler
-        logError(error, `Failed to fetch products from ${url}`);
-        // Ném lại lỗi để SWR xử lý
-        throw error;
+      switch (method) {
+        case "getWithRetry": {
+          const [queryParams] = params as [Record<string, number>];
+          return await productService.getProductsWithRetry(queryParams);
+        }
+
+        case "searchWithRetry": {
+          const [query, searchParams] = params as [string, Record<string, number>];
+          return await productService.searchProductsWithRetry(query, searchParams);
+        }
+
+        default:
+          throw new Error(`Unknown fetch method: ${method}`);
       }
     },
-    [logError],
+    [],
   );
 
-  // Cấu hình tối giản cho SWR - chỉ giữ những gì thực sự cần thiết
-  const swrConfig: SWRInfiniteConfiguration<ProductsResponse> = {
-    // Tắt revalidate khi focus để tránh gọi API không cần thiết khi user quay lại tab
-    revalidateOnFocus: false,
-  };
-
-  // Sử dụng useSWRInfinite để fetch dữ liệu với xử lý lỗi cải thiện
+  // Sử dụng useSWRInfinite để fetch dữ liệu với xử lý lỗi từ BaseService
   const { data, error, isLoading, isValidating, size, setSize, mutate } =
-    useSWRInfinite<ProductsResponse>(getKey, fetcherWithErrorHandling, swrConfig);
+    useSWRInfinite<ProductsResponse>(getKey, fetcher, swrConfig);
 
   // Flatten danh sách sản phẩm từ tất cả các trang
   const products = data ? data.flatMap((page) => page.products) : [];
@@ -84,11 +82,11 @@ export const useProducts = (params: { limit?: number; searchQuery?: string } = {
   /**
    * Hàm để tải thêm dữ liệu
    */
-  const loadMore = () => {
+  const loadMore = useCallback(() => {
     if (!isReachingEnd && !isLoadingMore) {
       setSize(size + 1);
     }
-  };
+  }, [isLoadingMore, isReachingEnd, setSize, size]);
 
   // Hàm để retry thủ công
   const retry = useCallback(() => {

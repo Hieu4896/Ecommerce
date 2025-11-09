@@ -8,10 +8,10 @@ import { useAuth } from "@hooks/useAuth";
 import { useEffect, useState } from "react";
 
 export default function Header() {
-  const { isLoading, isLoggingOut, isAuthenticated, restoreSessionFromCookies } = useAuth();
-  console.log("isAuthenticated", isAuthenticated);
+  const { isLoading, isLoggingOut, isAuthenticated, restoreSession } = useAuth();
 
   const [mounted, setMounted] = useState(false);
+  console.log("mounted", mounted);
 
   useEffect(() => {
     setMounted(true);
@@ -19,13 +19,13 @@ export default function Header() {
 
   useEffect(() => {
     if (mounted && !isAuthenticated) {
-      console.log("restoreSessionFromCookies is running...");
-
-      restoreSessionFromCookies().then((data) => {
-        if (!data) window.location.href = "/login";
+      restoreSession().then((result) => {
+        if (!result) {
+          window.location.href = "/login";
+        }
       });
     }
-  }, [isAuthenticated, mounted, restoreSessionFromCookies]);
+  }, [isAuthenticated, mounted, restoreSession]);
 
   return (
     <header className="w-full h-15 py-2 bg-accent flex justify-between items-center">

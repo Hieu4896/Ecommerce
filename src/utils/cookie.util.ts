@@ -1,6 +1,5 @@
 /**
- * Utility functions để quản lý cookies một cách tập trung
- * Tránh duplicate code và đảm bảo consistency trên toàn bộ ứng dụng
+ * Utility functions để quản lý cookies
  */
 
 import { COOKIE_CONFIG, COOKIE_EXPIRES, COOKIE_NAMES } from "@constants/cookie.constant";
