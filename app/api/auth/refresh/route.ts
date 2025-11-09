@@ -10,7 +10,6 @@ export async function POST(request: NextRequest) {
   try {
     // Lấy refresh token từ cookies
     const refreshToken = getRefreshTokenFromRequest(request);
-
     if (!refreshToken) {
       return NextResponse.json({ error: "Không tìm thấy refresh token" }, { status: 401 });
     }

@@ -15,7 +15,8 @@ export async function middleware(request: NextRequest) {
 
   // Lấy access token từ cookies để kiểm tra authentication status
   const accessToken = getAccessTokenFromRequest(request);
-
+  // const accessToken =
+  //   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MzMsInVzZXJuYW1lIjoiY2FydGVyYiIsImVtYWlsIjoiY2FydGVyLmJha2VyQHguZHVtbXlqc29uLmNvbSIsImZpcnN0TmFtZSI6IkNhcnRlciIsImxhc3ROYW1lIjoiQmFrZXIiLCJnZW5kZXIiOiJtYWxlIiwiaW1hZ2UiOiJodHRwczovL2R1bW15anNvbi5jb20vaWNvbi9jYXJ0ZXJiLzEyOCIsImlhdCI6MTc2MjY2NzcyNSwiZXhwIjoxNzYyNjY3ODQ1fQ.kfD1b8d7xlX74Lr0gjVcWikS6ojf2Zm4ZIsaWAKz200";
   console.log("accessToken", accessToken);
 
   // Xác định user đã xác thực hay chưa

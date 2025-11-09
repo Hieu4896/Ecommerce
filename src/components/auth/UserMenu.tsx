@@ -10,6 +10,7 @@ import { LogOutIcon } from "lucide-react";
 import Image from "next/image";
 import { useAuth } from "@hooks/useAuth";
 import { CartIcon } from "@src/components/cart/CartIcon";
+
 export function UserMenu() {
   const { user, logout } = useAuth();
 

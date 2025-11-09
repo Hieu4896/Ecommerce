@@ -2,12 +2,15 @@ import { NextResponse } from "next/server";
 
 /**
  * API route để xử lý đăng xuất
- * Xóa cookies và trả về response thành công
+ * Xóa cookies và localStorage của auth store
  */
 export async function POST() {
   try {
-    // Tạo response để xóa cookies
-    const response = NextResponse.json({ success: true });
+    // Tạo response để xóa cookies và localStorage
+    const response = NextResponse.json({
+      success: true,
+      clearLocalStorage: true, // Thêm flag để client biết cần xóa localStorage
+    });
 
     // Xóa access token cookie
     response.cookies.set("access_token", "", {

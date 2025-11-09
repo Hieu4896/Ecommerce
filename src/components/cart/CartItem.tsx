@@ -10,7 +10,6 @@ import { Minus, Plus, Trash2 } from "lucide-react";
  */
 interface CartItemProps {
   cartItem: CartItemType;
-  isLoading?: boolean;
   onRemove?: (productId: number) => void;
   onQuantityChange?: (productId: number, quantity: number) => void;
 }
@@ -19,12 +18,7 @@ interface CartItemProps {
  * Component hiển thị một sản phẩm trong giỏ hàng
  * Cho phép thay đổi số lượng và xóa sản phẩm
  */
-export const CartItem = ({
-  cartItem,
-  isLoading = false,
-  onRemove,
-  onQuantityChange,
-}: CartItemProps) => {
+export const CartItem = ({ cartItem, onRemove, onQuantityChange }: CartItemProps) => {
   // Xử lý khi thay đổi số lượng bằng input
   const handleQuantityChange = (newQuantity: number) => {
     if (newQuantity < 1) return;
@@ -43,17 +37,17 @@ export const CartItem = ({
 
   return (
     <Card className="w-full border-border bg-card shadow-sm">
-      <CardContent className="p-4">
-        <div className="flex gap-4">
+      <CardContent className="p-3 sm:p-4">
+        <div className="flex gap-3 sm:gap-4">
           {/* Hình ảnh sản phẩm */}
-          <div className="relative w-20 h-20">
+          <div className="relative w-16 h-16 sm:w-20 sm:h-20">
             {cartItem.thumbnail ? (
               <Image
                 src={cartItem.thumbnail}
                 alt={cartItem.title}
                 className="object-cover rounded-md"
                 fill
-                sizes="80px"
+                sizes="(max-width: 640px) 64px, 80px"
               />
             ) : (
               <div className="w-full h-full bg-muted rounded-md flex items-center justify-center">
@@ -64,9 +58,11 @@ export const CartItem = ({
 
           {/* Thông tin sản phẩm */}
           <div className="flex-1 min-w-0">
-            <h3 className="font-medium text-primary-foreground truncate">{cartItem.title}</h3>
-            <div className="flex items-center gap-2 mt-2">
-              <span className="text-lg font-semibold text-success">
+            <h3 className="font-medium text-primary-foreground text-sm sm:text-base truncate">
+              {cartItem.title}
+            </h3>
+            <div className="flex items-center gap-2 mt-1 sm:mt-2">
+              <span className="text-base sm:text-lg font-semibold text-success">
                 ${cartItem.price.toFixed(2)}
               </span>
             </div>
@@ -78,7 +74,6 @@ export const CartItem = ({
               variant="ghost"
               size="sm"
               onClick={() => onRemove?.(cartItem.id)}
-              disabled={isLoading}
               className="text-destructive hover:text-destructive hover:bg-destructive/10 p-2 h-auto"
             >
               <Trash2 className="h-4 w-4" />
@@ -89,8 +84,8 @@ export const CartItem = ({
                 variant="outline"
                 size="sm"
                 onClick={handleDecrease}
-                disabled={isLoading || cartItem.quantity <= 1}
-                className="h-8 w-8 p-0"
+                disabled={cartItem.quantity <= 1}
+                className="h-7 w-7 sm:h-8 sm:w-8 p-0"
               >
                 <Minus className="h-3 w-3" />
               </Button>
@@ -102,21 +97,20 @@ export const CartItem = ({
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   handleQuantityChange(parseInt(e.target.value) || 1)
                 }
-                disabled={isLoading}
-                className="w-16 text-center h-8 bg-accent"
+                className="w-12 sm:w-16 text-center h-7 sm:h-8 bg-accent text-sm"
               />
 
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleIncrease}
-                disabled={isLoading}
-                className="h-8 w-8 p-0"
+                className="h-7 w-7 sm:h-8 sm:w-8 p-0"
               >
                 <Plus className="h-3 w-3" />
               </Button>
             </div>
 
+            {/* Ẩn trên mobile, hiển thị trên desktop */}
             <div className="font-semibold flex gap-3 text-primary-foreground">
               <span className="text-muted-foreground line-through">
                 ${cartItem.total.toFixed(2)}

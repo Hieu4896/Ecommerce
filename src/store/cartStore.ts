@@ -1,7 +1,15 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { Cart, CartItem } from "@src/types/cart.type";
+import { Cart } from "@src/types/cart.type";
 import { Product } from "@src/types/product.type";
+import {
+  createCartItem,
+  updateCartItemQuantity,
+  findCartItemIndex,
+  createCartFromItems,
+  updateCartWithItems,
+} from "@utils/cart.util";
+import { checkAuthentication } from "@src/utils/auth.util";
 
 /**
  * Interface cho state của giỏ hàng
@@ -52,109 +60,73 @@ export const useCartStore = create<CartStore>()(
       setCart: (cart) => set({ cart }),
 
       addToCart: (product, quantity) => {
+        // Kiểm tra authentication trước khi thực hiện thao tác
+        try {
+          checkAuthentication();
+        } catch (error) {
+          set({ error: error instanceof Error ? error.message : "Lỗi xác thực" });
+          return;
+        }
+
         const { cart } = get();
-
-        // Tính toán giá sau khi giảm giá
-        const discountPercentage = product.discountPercentage || 0;
-        const discountedPrice = product.price * (1 - discountPercentage / 100);
-
-        const newItem: CartItem = {
-          id: product.id,
-          title: product.title,
-          price: product.price,
-          quantity,
-          total: product.price * quantity,
-          discountPercentage,
-          discountedTotal: discountedPrice * quantity,
-          thumbnail: product.thumbnail || "/placeholder.jpg",
-        };
+        const newItem = createCartItem(product, quantity);
 
         if (cart) {
           // Kiểm tra sản phẩm đã có trong giỏ hàng chưa
-          const existingItemIndex = cart.products.findIndex((item) => item.id === product.id);
+          const existingItemIndex = findCartItemIndex(cart.products, product.id);
 
           if (existingItemIndex >= 0) {
             // Nếu sản phẩm đã có, cập nhật số lượng
             const updatedProducts = [...cart.products];
             const existingItem = updatedProducts[existingItemIndex];
             const newQuantity = existingItem.quantity + quantity;
-            const existingDiscountedPrice =
-              existingItem.price * (1 - existingItem.discountPercentage / 100);
 
-            updatedProducts[existingItemIndex] = {
-              ...existingItem,
-              quantity: newQuantity,
-              total: existingItem.price * newQuantity,
-              discountedTotal: existingDiscountedPrice * newQuantity,
-            };
+            updatedProducts[existingItemIndex] = updateCartItemQuantity(existingItem, newQuantity);
 
-            const updatedCart = {
-              ...cart,
-              products: updatedProducts,
-              total: updatedProducts.reduce((sum, item) => sum + item.total, 0),
-              discountedTotal: updatedProducts.reduce((sum, item) => sum + item.discountedTotal, 0),
-              totalQuantity: updatedProducts.reduce((sum, item) => sum + item.quantity, 0),
-            };
-
+            const updatedCart = updateCartWithItems(cart, updatedProducts);
             set({ cart: updatedCart });
           } else {
             // Nếu sản phẩm chưa có, thêm mới
-            const updatedCart = {
-              ...cart,
-              products: [...cart.products, newItem],
-              total: cart.total + newItem.total,
-              discountedTotal: cart.discountedTotal + newItem.discountedTotal,
-              totalProducts: cart.totalProducts + 1,
-              totalQuantity: cart.totalQuantity + quantity,
-            };
-
+            const updatedProducts = [...cart.products, newItem];
+            const updatedCart = updateCartWithItems(cart, updatedProducts);
             set({ cart: updatedCart });
           }
         } else {
           // Nếu chưa có giỏ hàng, tạo mới
-          const newCart: Cart = {
-            id: 1,
-            userId: 1,
-            products: [newItem],
-            total: newItem.total,
-            discountedTotal: newItem.discountedTotal,
-            totalProducts: 1,
-            totalQuantity: quantity,
-          };
-
+          const newCart = createCartFromItems([newItem]);
           set({ cart: newCart });
         }
       },
 
       updateQuantity: (productId, quantity) => {
+        // Kiểm tra authentication trước khi thực hiện thao tác
+        try {
+          checkAuthentication();
+        } catch (error) {
+          set({ error: error instanceof Error ? error.message : "Lỗi xác thực" });
+          return;
+        }
+
         const { cart } = get();
         if (!cart) return;
 
-        const updatedProducts = cart.products.map((item) => {
-          if (item.id === productId) {
-            const discountedPrice = item.price * (1 - item.discountPercentage / 100);
-            return {
-              ...item,
-              quantity,
-              total: item.price * quantity,
-              discountedTotal: discountedPrice * quantity,
-            };
-          }
-          return item;
-        });
+        const updatedProducts = cart.products.map((item) =>
+          item.id === productId ? updateCartItemQuantity(item, quantity) : item,
+        );
 
-        const updatedCart = {
-          ...cart,
-          products: updatedProducts,
-          total: updatedProducts.reduce((sum, item) => sum + item.total, 0),
-          discountedTotal: updatedProducts.reduce((sum, item) => sum + item.discountedTotal, 0),
-          totalQuantity: updatedProducts.reduce((sum, item) => sum + item.quantity, 0),
-        };
-
+        const updatedCart = updateCartWithItems(cart, updatedProducts);
         set({ cart: updatedCart });
       },
 
       removeFromCart: (productId) => {
+        // Kiểm tra authentication trước khi thực hiện thao tác
+        try {
+          checkAuthentication();
+        } catch (error) {
+          set({ error: error instanceof Error ? error.message : "Lỗi xác thực" });
+          return;
+        }
+
         const { cart } = get();
         if (!cart) return;
 
@@ -163,20 +135,22 @@ export const useCartStore = create<CartStore>()(
         if (updatedProducts.length === 0) {
           set({ cart: null });
         } else {
-          const updatedCart = {
-            ...cart,
-            products: updatedProducts,
-            total: updatedProducts.reduce((sum, item) => sum + item.total, 0),
-            discountedTotal: updatedProducts.reduce((sum, item) => sum + item.discountedTotal, 0),
-            totalProducts: updatedProducts.length,
-            totalQuantity: updatedProducts.reduce((sum, item) => sum + item.quantity, 0),
-          };
-
+          const updatedCart = updateCartWithItems(cart, updatedProducts);
           set({ cart: updatedCart });
         }
       },
 
-      clearCart: () => set({ cart: null }),
+      clearCart: () => {
+        // Kiểm tra authentication trước khi thực hiện thao tác
+        try {
+          checkAuthentication();
+        } catch (error) {
+          set({ error: error instanceof Error ? error.message : "Lỗi xác thực" });
+          return;
+        }
+
+        set({ cart: null });
+      },
 
       setLoading: (isLoading) => set({ isLoading }),
 

@@ -11,7 +11,7 @@ import { useCart } from "@src/hooks/useCart";
  */
 export const ProductItem = ({ product }: { product: Product }) => {
   const quantityRef = useRef<HTMLInputElement>(null);
-  const { addToCart, isLoading } = useCart();
+  const { handleAddToCart } = useCart();
 
   return (
     <Card className="w-full border-border hover:border-accent transition-colors duration-300 ease-out">
@@ -52,13 +52,12 @@ export const ProductItem = ({ product }: { product: Product }) => {
         <div className="flex items-center justify-between gap-4">
           <Button
             className="flex-1"
-            disabled={isLoading}
             onClick={async () => {
               const quantity = Number(quantityRef.current?.value || 1);
-              await addToCart(product, quantity);
+              await handleAddToCart(product, quantity);
             }}
           >
-            {isLoading ? "Adding..." : "Add to Cart"}
+            Add to Cart
           </Button>
 
           <Input

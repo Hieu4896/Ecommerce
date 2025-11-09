@@ -1,3 +1,5 @@
+import { Product } from "./product.type";
+
 /**
  * Interface cho một item trong giỏ hàng
  */
@@ -63,4 +65,16 @@ export interface DeleteCartResponse {
   id: number;
   isDeleted: boolean;
   deletedOn: string;
+}
+
+/**
+ * Interface cho trạng thái và functions của useCart hook
+ */
+export interface UseCartReturn {
+  cart: Cart | null;
+  handleAddToCart: (product: Product, quantity: number) => Promise<void>;
+  handleQuantityChange: (productId: number, quantity: number) => Promise<void>;
+  handleRemoveItem: (productId: number) => Promise<void>;
+  handleClearCart: () => Promise<void>;
+  handleCheckout: () => void;
 }

@@ -2,24 +2,9 @@
 
 import { useCallback } from "react";
 import { useCartStore } from "@src/store/cartStore";
-import { Cart } from "@src/types/cart.type";
+import { UseCartReturn } from "@src/types/cart.type";
 import { Product } from "@src/types/product.type";
-
-/**
- * Interface cho trạng thái và functions của useCart hook
- */
-export interface UseCartReturn {
-  cart: Cart | null;
-  isLoading: boolean;
-  error: string | null;
-  fetchUserCart: () => Promise<void>;
-  addToCart: (product: Product, quantity: number) => Promise<void>;
-  // Các hàm xử lý với toast notification
-  handleQuantityChange: (productId: number, quantity: number) => Promise<void>;
-  handleRemoveItem: (productId: number) => Promise<void>;
-  handleClearCart: () => Promise<void>;
-  handleCheckout: () => void;
-}
+import { toast } from "react-hot-toast";
 
 /**
  * Hook để quản lý giỏ hàng của người dùng
@@ -27,58 +12,32 @@ export interface UseCartReturn {
  * @returns UseCartReturn - Trạng thái và functions của giỏ hàng
  */
 export function useCart(): UseCartReturn {
-  const {
-    cart,
-    isLoading,
-    error,
-    addToCart,
-    updateQuantity,
-    removeFromCart,
-    clearCart,
-    setLoading,
-    setError,
-  } = useCartStore();
-
-  /**
-   * Lấy giỏ hàng của người dùng hiện tại (simulation)
-   */
-  const fetchUserCart = useCallback(async (): Promise<void> => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      setLoading(false);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Lỗi khi lấy giỏ hàng";
-      setError(errorMessage);
-      console.error("Lỗi khi lấy giỏ hàng:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, [setLoading, setError]);
+  const { cart, addToCart, updateQuantity, removeFromCart, clearCart, setLoading, setError } =
+    useCartStore();
 
   /**
    * Thêm sản phẩm vào giỏ hàng
    * @param product - Sản phẩm cần thêm
    * @param quantity - Số lượng sản phẩm
    */
-  const addToCartHook = useCallback(
+  const handleAddToCart = useCallback(
     async (product: Product, quantity: number): Promise<void> => {
       setLoading(true);
       setError(null);
-
       try {
         // Sử dụng store action thay vì API call
         addToCart(product, quantity);
-
-        // Import toast động để tránh lỗi trên server side
-        const { toast } = await import("react-hot-toast");
         toast.success("Đã thêm sản phẩm vào giỏ hàng");
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : "Lỗi khi thêm vào giỏ hàng";
         setError(errorMessage);
+
+        // Hiển thị toast cho lỗi authentication
+        if (errorMessage.includes("Vui lòng đăng nhập")) {
+          toast.error(errorMessage);
+        }
+
         console.error("Lỗi khi thêm vào giỏ hàng:", err);
-        throw err;
       } finally {
         setLoading(false);
       }
@@ -98,13 +57,17 @@ export function useCart(): UseCartReturn {
       try {
         // Sử dụng store action thay vì API call
         updateQuantity(productId, quantity);
-
-        // Import toast động để tránh lỗi trên server side
-        const { toast } = await import("react-hot-toast");
         toast.success("Đã cập nhật số lượng sản phẩm");
       } catch (error) {
-        const { toast } = await import("react-hot-toast");
-        toast.error("Lỗi khi cập nhật số lượng");
+        const errorMessage = error instanceof Error ? error.message : "Lỗi khi cập nhật số lượng";
+
+        // Hiển thị toast cho lỗi authentication
+        if (errorMessage.includes("Vui lòng đăng nhập")) {
+          toast.error(errorMessage);
+        } else {
+          toast.error("Lỗi khi cập nhật số lượng");
+        }
+
         console.error("Lỗi khi cập nhật số lượng:", error);
       }
     },
@@ -120,13 +83,17 @@ export function useCart(): UseCartReturn {
       try {
         // Sử dụng store action thay vì API call
         removeFromCart(productId);
-
-        // Import toast động để tránh lỗi trên server side
-        const { toast } = await import("react-hot-toast");
         toast.success("Đã xóa sản phẩm khỏi giỏ hàng");
       } catch (error) {
-        const { toast } = await import("react-hot-toast");
-        toast.error("Lỗi khi xóa sản phẩm");
+        const errorMessage = error instanceof Error ? error.message : "Lỗi khi xóa sản phẩm";
+
+        // Hiển thị toast cho lỗi authentication
+        if (errorMessage.includes("Vui lòng đăng nhập")) {
+          toast.error(errorMessage);
+        } else {
+          toast.error("Lỗi khi xóa sản phẩm");
+        }
+
         console.error("Lỗi khi xóa sản phẩm:", error);
       }
     },
@@ -146,13 +113,17 @@ export function useCart(): UseCartReturn {
       try {
         // Sử dụng store action thay vì API call
         clearCart();
-
-        // Import toast động để tránh lỗi trên server side
-        const { toast } = await import("react-hot-toast");
         toast.success("Đã xóa toàn bộ giỏ hàng");
       } catch (error) {
-        const { toast } = await import("react-hot-toast");
-        toast.error("Lỗi khi xóa giỏ hàng");
+        const errorMessage = error instanceof Error ? error.message : "Lỗi khi xóa giỏ hàng";
+
+        // Hiển thị toast cho lỗi authentication
+        if (errorMessage.includes("Vui lòng đăng nhập")) {
+          toast.error(errorMessage);
+        } else {
+          toast.error("Lỗi khi xóa giỏ hàng");
+        }
+
         console.error("Lỗi khi xóa giỏ hàng:", error);
       }
     }
@@ -162,16 +133,12 @@ export function useCart(): UseCartReturn {
    * Xử lý khi tiến hành thanh toán
    */
   const handleCheckout = useCallback(async (): Promise<void> => {
-    const { toast } = await import("react-hot-toast");
     toast.success("Chức năng thanh toán sẽ được triển khai sau!");
   }, []);
 
   return {
     cart,
-    isLoading,
-    error,
-    fetchUserCart,
-    addToCart: addToCartHook,
+    handleAddToCart,
     handleQuantityChange,
     handleRemoveItem,
     handleClearCart,

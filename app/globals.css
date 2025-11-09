@@ -190,10 +190,10 @@
 
 @layer base {
   html {
-    @apply scroll-smooth font-sans leading-normal tracking-tight;
+    @apply font-sans leading-normal tracking-tight;
   }
   body {
-    @apply bg-background text-foreground overflow-x-hidden min-h-screen;
+    @apply bg-background text-foreground overflow-x-hidden min-h-screen scroll-smooth;
   }
 
   button {

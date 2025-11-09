@@ -1,18 +1,7 @@
 "use client";
 
-import { useContext } from "react";
-import { AuthContextType } from "@src/types/auth.type";
-import { AuthContext } from "@src/providers/auth.provider";
+import { useAuthStore } from "@src/store/authStore";
 
-/**
- * Hook để sử dụng AuthContext
- * @returns AuthContextType - Giá trị của AuthContext
- * @throws Error nếu được sử dụng ngoài AuthProvider
- */
-export function useAuth(): AuthContextType {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth phải được sử dụng trong AuthProvider");
-  }
-  return context;
+export function useAuth() {
+  return useAuthStore();
 }

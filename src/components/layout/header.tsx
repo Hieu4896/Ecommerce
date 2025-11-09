@@ -2,38 +2,46 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { UserMenu } from "../auth/UserMenu";
 import { useAuth } from "@hooks/useAuth";
+import { useEffect, useState } from "react";
 
 export default function Header() {
-  const { isLoading, isLoggingOut, isAuthenticated } = useAuth();
+  const { isLoading, isLoggingOut, isAuthenticated, restoreSessionFromCookies } = useAuth();
+  console.log("isAuthenticated", isAuthenticated);
 
-  const pathName = usePathname();
+  const [mounted, setMounted] = useState(false);
 
-  /**
-   * Ẩn Header trên trang chủ (/) và trang đăng nhập (/login)
-   */
-  const shouldHideAuthUI = pathName === "/" || pathName === "/login";
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && !isAuthenticated) {
+      console.log("restoreSessionFromCookies is running...");
+
+      restoreSessionFromCookies().then((data) => {
+        if (!data) window.location.href = "/login";
+      });
+    }
+  }, [isAuthenticated, mounted, restoreSessionFromCookies]);
 
   return (
-    !shouldHideAuthUI && (
-      <header className="w-full h-15 py-2 bg-accent flex justify-between items-center">
-        <nav className="container h-full flex items-center justify-between">
-          <Link href="/" className="flex items-center">
-            <Image src="/logo.png" alt="Pawsy" width={60} height={60} className="w-8 h-auto" />
-          </Link>
+    <header className="w-full h-15 py-2 bg-accent flex justify-between items-center">
+      <nav className="container h-full flex items-center justify-between">
+        <Link href="/" className="flex items-center">
+          <Image src="/logo.png" alt="Pawsy" width={60} height={60} className="w-8 h-auto" />
+        </Link>
 
-          <div className="flex items-center gap-4">
-            {/* Hiển thị thông tin user hoặc nút đăng nhập */}
-            {isLoading || isLoggingOut ? (
-              <div className="w-8 h-8 bg-gray-300 rounded-full animate-pulse"></div>
-            ) : (
-              isAuthenticated && <UserMenu />
-            )}
-          </div>
-        </nav>
-      </header>
-    )
+        <div className="flex items-center gap-4">
+          {/* Hiển thị thông tin user hoặc nút đăng nhập */}
+          {isLoading || isLoggingOut ? (
+            <div className="w-8 h-8 bg-gray-300 rounded-full animate-pulse"></div>
+          ) : (
+            isAuthenticated && <UserMenu />
+          )}
+        </div>
+      </nav>
+    </header>
   );
 }

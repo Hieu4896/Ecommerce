@@ -9,6 +9,7 @@ import { Input } from "@components/input";
 import { Label } from "@components/label";
 import { LoginFormProps } from "@src/types/auth.type";
 import { useAuth } from "@hooks/useAuth";
+import { authenticatedFetch } from "@src/utils/fetch.util";
 
 /**
  * Schema validation cho form đăng nhập sử dụng Yup
@@ -75,7 +76,7 @@ export default function LoginForm({ callbackUrl = "/products" }: LoginFormProps)
   };
 
   return (
-    <div className="max-w-[70%] m-auto bg-foreground/70 p-12 flex items-center justify-center">
+    <div className="mobile:max-w-full tablet:max-w-[70%] m-auto bg-foreground/70 mobile:p-6 tablet:p-12 rounded-lg flex items-center justify-center">
       <div className="w-full space-y-8 ">
         <div className="text-center space-y-4">
           <h1>Đăng nhập vào tài khoản</h1>

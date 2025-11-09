@@ -11,7 +11,6 @@ interface CartSummaryProps {
   cart: Cart | null;
   onClearCart: () => void;
   onCheckout: () => void;
-  isLoading?: boolean;
 }
 
 /**
@@ -19,9 +18,6 @@ interface CartSummaryProps {
  * Hiển thị tổng tiền, số lượng sản phẩm và các nút hành động
  */
 
-/**
- * Hiển thị tóm tắt giỏ hàng
- */
 const renderItem = (label: string, value: string | number) => {
   return (
     <div className="flex justify-between text-sm">
@@ -30,12 +26,7 @@ const renderItem = (label: string, value: string | number) => {
     </div>
   );
 };
-export const CartSummary = ({
-  cart,
-  onClearCart,
-  onCheckout,
-  isLoading = false,
-}: CartSummaryProps) => {
+export const CartSummary = ({ cart, onClearCart, onCheckout }: CartSummaryProps) => {
   /**
    * Tính tổng số lượng sản phẩm trong giỏ hàng
    */
@@ -75,21 +66,11 @@ export const CartSummary = ({
 
         {/* Các nút hành động */}
         <div className="space-y-4">
-          <Button
-            variant="secondary"
-            className="w-full"
-            onClick={onCheckout}
-            disabled={!cart || totalItems === 0 || isLoading}
-          >
-            {isLoading ? "Đang xử lý..." : "Thanh toán"}
+          <Button variant="secondary" className="w-full" onClick={onCheckout}>
+            Thanh toán
           </Button>
 
-          <Button
-            variant="default"
-            className="w-full"
-            onClick={onClearCart}
-            disabled={!cart || totalItems === 0 || isLoading}
-          >
+          <Button variant="default" className="w-full" onClick={onClearCart}>
             <Trash2 className="h-4 w-4 mr-2" />
             Xóa giỏ hàng
           </Button>

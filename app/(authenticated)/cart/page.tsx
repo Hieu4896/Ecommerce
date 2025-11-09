@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
 import { useCart } from "@src/hooks/useCart";
 import { CartItem } from "@src/components/cart/CartItem";
 import { CartSummary } from "@src/components/cart/CartSummary";
 import { Button } from "@components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@components/card";
-import { ShoppingBag, ArrowLeft, Loader2 } from "lucide-react";
+import { ShoppingBag, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 /**
@@ -14,29 +13,10 @@ import Link from "next/link";
  * Hiển thị danh sách sản phẩm trong giỏ hàng và các thao tác liên quan
  */
 export default function CartPage() {
-  const {
-    cart,
-    isLoading: cartLoading,
-    error: cartError,
-    fetchUserCart,
-    handleClearCart,
-    handleCheckout,
-    handleQuantityChange,
-    handleRemoveItem,
-  } = useCart();
-
-  // Lấy dữ liệu giỏ hàng khi component được mount
-  useEffect(() => {
-    fetchUserCart();
-  }, [fetchUserCart]);
-
-  // Trạng thái để xác định nội dung cần hiển thị
-  const shouldShowLoading = cartLoading && !cart && !cartError;
-  const shouldShowError = !cartLoading && cartError;
-  const shouldShowEmptyCart =
-    !cartLoading && !cartError && (!cart || !cart.products || cart.products.length === 0);
-  const shouldShowCartWithItems =
-    !cartLoading && !cartError && cart && cart.products && cart.products.length > 0;
+  const { cart, handleClearCart, handleCheckout, handleQuantityChange, handleRemoveItem } =
+    useCart();
+  const isCartEmpty = !cart || !cart.products || cart.products.length === 0;
+  const isCartExists = !isCartEmpty;
 
   return (
     <div className="container px-4 py-8">
@@ -46,28 +26,8 @@ export default function CartPage() {
       </div>
 
       <div className="flex flex-col gap-6">
-        {/* Hiển thị loading */}
-        {shouldShowLoading && (
-          <div className="flex items-center justify-center min-h-[200px]">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <span className="ml-2">Đang tải giỏ hàng...</span>
-          </div>
-        )}
-
-        {/* Hiển thị lỗi */}
-        {shouldShowError && (
-          <Card className="w-full">
-            <CardContent className="pt-6 text-center">
-              <ShoppingBag className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h2 className="text-xl font-semibold mb-2">Lỗi khi tải giỏ hàng</h2>
-              <p className="text-muted-foreground mb-4">{cartError}</p>
-              <Button onClick={fetchUserCart}>Thử lại</Button>
-            </CardContent>
-          </Card>
-        )}
-
         {/* Giỏ hàng trống */}
-        {shouldShowEmptyCart && (
+        {isCartEmpty && (
           <Card className="w-full">
             <CardContent className="pt-6 text-center">
               <ShoppingBag className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
@@ -84,7 +44,7 @@ export default function CartPage() {
         )}
 
         {/* Giỏ hàng có sản phẩm */}
-        {shouldShowCartWithItems && (
+        {isCartExists && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Danh sách sản phẩm trong giỏ hàng */}
             <div className="lg:col-span-2">
@@ -99,7 +59,6 @@ export default function CartPage() {
                     <CartItem
                       key={cartItem.id}
                       cartItem={cartItem}
-                      isLoading={cartLoading}
                       onRemove={handleRemoveItem}
                       onQuantityChange={handleQuantityChange}
                     />
@@ -125,7 +84,6 @@ export default function CartPage() {
                   cart={cart}
                   onClearCart={handleClearCart}
                   onCheckout={handleCheckout}
-                  isLoading={cartLoading}
                 />
               </div>
             </div>
