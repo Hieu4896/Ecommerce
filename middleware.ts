@@ -53,7 +53,11 @@ export async function middleware(request: NextRequest) {
   }
 
   // Bảo vệ các routes trong (authenticated) folder
-  if (pathname.startsWith("/products") || pathname.startsWith("/cart")) {
+  if (
+    pathname.startsWith("/products") ||
+    pathname.startsWith("/cart") ||
+    pathname.startsWith("/checkout")
+  ) {
     // Nếu chưa xác thực, redirect đến login page với callbackUrl
     if (!isAuthenticated) {
       const url = new URL("/login", request.url);

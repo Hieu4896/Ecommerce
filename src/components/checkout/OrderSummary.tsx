@@ -1,11 +1,12 @@
+import { useRouter } from "next/navigation";
 import { Button } from "@components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@components/card";
 import { Cart } from "@src/types/cart.type";
-import { formatPrice } from "@src/utils/format.util";
+import { formatPrice } from "@utils/format.util";
 import { ShoppingBag, Trash2 } from "lucide-react";
 
 /**
- * Props cho CartSummary component
+ * Props cho OrderSummary component
  */
 interface CartSummaryProps {
   cart: Cart | null;
@@ -26,7 +27,9 @@ const renderItem = (label: string, value: string | number) => {
     </div>
   );
 };
-export const CartSummary = ({ cart, onClearCart, onCheckout }: CartSummaryProps) => {
+export const OrderSummary = ({ cart, onClearCart }: CartSummaryProps) => {
+  const router = useRouter();
+
   /**
    * Tính tổng số lượng sản phẩm trong giỏ hàng
    */
@@ -40,6 +43,11 @@ export const CartSummary = ({ cart, onClearCart, onCheckout }: CartSummaryProps)
   const shipping = subtotal > 100 ? 0 : 10; // Phí vận chuyển
   const tax = subtotal * 0.08; // Thuế
   const total = subtotal + shipping + tax;
+
+  // Xử lý chuyển hướng đến trang thanh toán
+  const handleCheckout = () => {
+    router.push("/checkout");
+  };
 
   return (
     <Card className="w-full sticky top-4 bg-primary-foreground">
@@ -66,11 +74,11 @@ export const CartSummary = ({ cart, onClearCart, onCheckout }: CartSummaryProps)
 
         {/* Các nút hành động */}
         <div className="space-y-4">
-          <Button variant="secondary" className="w-full" onClick={onCheckout}>
+          <Button variant="default" className="w-full" onClick={handleCheckout}>
             Thanh toán
           </Button>
 
-          <Button variant="default" className="w-full" onClick={onClearCart}>
+          <Button variant="outline" className="w-full" onClick={onClearCart}>
             <Trash2 className="h-4 w-4 mr-2" />
             Xóa giỏ hàng
           </Button>

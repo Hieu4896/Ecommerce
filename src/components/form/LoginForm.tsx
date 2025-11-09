@@ -9,17 +9,7 @@ import { Input } from "@components/input";
 import { Label } from "@components/label";
 import { LoginFormProps } from "@src/types/auth.type";
 import { useAuth } from "@hooks/useAuth";
-import { authenticatedFetch } from "@src/utils/fetch.util";
-
-/**
- * Schema validation cho form đăng nhập sử dụng Yup
- */
-const loginSchema = yup
-  .object({
-    username: yup.string().required("Tên đăng nhập là bắt buộc"),
-    password: yup.string().required("Mật khẩu là bắt buộc"),
-  })
-  .required();
+import { loginSchema } from "../schema/auth.schema";
 
 /**
  * Type cho form data dựa trên schema

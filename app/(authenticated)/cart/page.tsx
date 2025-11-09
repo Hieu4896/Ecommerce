@@ -2,7 +2,7 @@
 
 import { useCart } from "@src/hooks/useCart";
 import { CartItem } from "@src/components/cart/CartItem";
-import { CartSummary } from "@src/components/cart/CartSummary";
+import { OrderSummary } from "@src/components/checkout/OrderSummary";
 import { Button } from "@components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@components/card";
 import { ShoppingBag, ArrowLeft } from "lucide-react";
@@ -80,7 +80,7 @@ export default function CartPage() {
             {/* Tóm tắt giỏ hàng */}
             <div className="lg:col-span-1">
               <div className="sticky top-4">
-                <CartSummary
+                <OrderSummary
                   cart={cart}
                   onClearCart={handleClearCart}
                   onCheckout={handleCheckout}

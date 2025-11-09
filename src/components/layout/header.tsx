@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { UserMenu } from "../auth/UserMenu";
+import { CartIcon } from "../cart/CartIcon";
 import { useAuth } from "@hooks/useAuth";
 import { useEffect, useState } from "react";
 
@@ -34,6 +35,8 @@ export default function Header() {
         </Link>
 
         <div className="flex items-center gap-4">
+          {/* Cart Icon - chỉ hiển thị khi đã đăng nhập */}
+          {isAuthenticated && <CartIcon />}
           {/* Hiển thị thông tin user hoặc nút đăng nhập */}
           {isLoading || isLoggingOut ? (
             <div className="w-8 h-8 bg-gray-300 rounded-full animate-pulse"></div>

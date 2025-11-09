@@ -3,8 +3,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { SessionUser, LoginCredentials } from "@src/types/auth.type";
-import { authenticatedFetch } from "@src/utils/fetch.util";
-import { toSessionUser } from "@src/utils/auth.util";
+import { toSessionUser } from "@utils/auth.util";
 
 /**
  * Interface cho state của giỏ hàng
@@ -28,6 +27,9 @@ interface AuthActions {
   setError: (error: string | null) => void;
   clearAuth: () => void;
   restoreSessionFromCookies: () => Promise<boolean>;
+  login: (credentials: LoginCredentials) => Promise<void>;
+  logout: () => Promise<void>;
+  refreshAuth: () => Promise<void>;
 }
 
 type AuthStore = AuthState & AuthActions;
@@ -61,7 +63,7 @@ export const useAuthStore = create<AuthStore>()(
 
         try {
           // Gọi API route để đăng nhập
-          const response = await authenticatedFetch("/api/auth/login", {
+          const response = await fetch("/api/auth/login", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -102,7 +104,7 @@ export const useAuthStore = create<AuthStore>()(
 
         try {
           // Gọi API route để xóa cookies
-          const response = await authenticatedFetch("/api/auth/logout", {
+          const response = await fetch("/api/auth/logout", {
             method: "POST",
           });
 
@@ -138,7 +140,7 @@ export const useAuthStore = create<AuthStore>()(
 
         try {
           // Gọi API route refresh để làm mới token
-          const response = await authenticatedFetch("/api/auth/refresh", {
+          const response = await fetch("/api/auth/refresh", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -151,7 +153,7 @@ export const useAuthStore = create<AuthStore>()(
           }
 
           // Lấy lại thông tin user sau khi làm mới token
-          const userInfoResponse = await authenticatedFetch("/api/auth/me");
+          const userInfoResponse = await fetch("/api/auth/me");
           const userInfo = await userInfoResponse.json();
           const sessionUser = toSessionUser(userInfo);
 

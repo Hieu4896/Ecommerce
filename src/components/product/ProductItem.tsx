@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@comp
 import { Button } from "@components/button";
 import { Input } from "@components/input";
 import { Product } from "@src/types/product.type";
-import { useCart } from "@src/hooks/useCart";
+import { useCart } from "@hooks/useCart";
+import { formatPrice } from "@utils/format.util";
 
 /**
  * Component hiển thị một sản phẩm với nút Add to Cart
@@ -37,7 +38,9 @@ export const ProductItem = ({ product }: { product: Product }) => {
       <CardContent className="pt-0">
         <div className="flex justify-between items-center mb-3">
           <div className="flex items-center gap-2">
-            <span className="text-lg font-semibold text-product-price">${product.price}</span>
+            <span className="text-lg font-semibold text-product-price">
+              {formatPrice(product.price)}
+            </span>
             {product.discountPercentage && (
               <span className="text-sm text-product-discount">-{product.discountPercentage}%</span>
             )}
@@ -57,7 +60,7 @@ export const ProductItem = ({ product }: { product: Product }) => {
               await handleAddToCart(product, quantity);
             }}
           >
-            Add to Cart
+            Thêm vào giỏ
           </Button>
 
           <Input

@@ -3,6 +3,7 @@ import { Button } from "@components/button";
 import { Input } from "@components/input";
 import { Card, CardContent } from "@components/card";
 import { CartItem as CartItemType } from "@src/types/cart.type";
+import { formatPrice } from "@utils/format.util";
 import { Minus, Plus, Trash2 } from "lucide-react";
 
 /**
@@ -63,7 +64,7 @@ export const CartItem = ({ cartItem, onRemove, onQuantityChange }: CartItemProps
             </h3>
             <div className="flex items-center gap-2 mt-1 sm:mt-2">
               <span className="text-base sm:text-lg font-semibold text-success">
-                ${cartItem.price.toFixed(2)}
+                {formatPrice(cartItem.price)}
               </span>
             </div>
           </div>
@@ -113,9 +114,9 @@ export const CartItem = ({ cartItem, onRemove, onQuantityChange }: CartItemProps
             {/* Ẩn trên mobile, hiển thị trên desktop */}
             <div className="font-semibold flex gap-3 text-primary-foreground">
               <span className="text-muted-foreground line-through">
-                ${cartItem.total.toFixed(2)}
+                {formatPrice(cartItem.total)}
               </span>
-              <span>${cartItem.discountedTotal.toFixed(2)}</span>
+              <span>{formatPrice(cartItem.discountedTotal)}</span>
             </div>
           </div>
         </div>

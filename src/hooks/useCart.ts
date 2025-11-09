@@ -133,7 +133,10 @@ export function useCart(): UseCartReturn {
    * Xử lý khi tiến hành thanh toán
    */
   const handleCheckout = useCallback(async (): Promise<void> => {
-    toast.success("Chức năng thanh toán sẽ được triển khai sau!");
+    // Chuyển hướng đến trang thanh toán
+    if (typeof window !== "undefined") {
+      window.location.href = "/checkout";
+    }
   }, []);
 
   return {
