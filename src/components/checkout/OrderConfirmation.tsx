@@ -1,68 +1,79 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { OrderConfirmation as OrderConfirmationType } from "@src/types/checkout.type";
+import React, { useEffect, useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@components/card";
-import { formatPrice } from "@utils/format.util";
+import { formatDate, formatPrice } from "@utils/format.util";
 import { useCheckoutStore } from "@src/store/checkoutStore";
+import { useOrderStore } from "@src/store/orderStore";
 
 /**
- * Component hiển thị trang xác nhận đơn hàng
+ * Component nội dung của trang xác nhận đơn hàng
  * Hiển thị thông tin chi tiết về đơn hàng đã đặt thành công
  */
-const OrderConfirmation: React.FC = () => {
+const OrderConfirmationContent: React.FC = () => {
   const router = useRouter();
-  const { isCompleted, resetCheckout } = useCheckoutStore();
-  const [orderConfirmation, setOrderConfirmation] = useState<OrderConfirmationType | null>(null);
+  const searchParams = useSearchParams();
+  const { resetCheckout } = useCheckoutStore();
+  const { orderConfirmation, clearOrderConfirmation, isOrderExpired } = useOrderStore();
+  const [isAuthorized, setIsAuthorized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Lấy dữ liệu xác nhận đơn hàng từ localStorage khi component được mount
+  // Lấy orderId từ URL
+  const urlOrderId = searchParams.get("orderId");
+
+  // Kiểm tra quyền truy cập và thiết lập timer xóa dữ liệu
   useEffect(() => {
-    const fetchOrderConfirmation = () => {
-      try {
-        // Lấy dữ liệu từ localStorage
-        const storedData = localStorage.getItem("order-confirmation");
-        if (storedData) {
-          const confirmationData = JSON.parse(storedData);
-          // Chuyển đổi chuỗi ngày thành đối tượng Date
-          if (confirmationData.orderDate) {
-            confirmationData.orderDate = new Date(confirmationData.orderDate);
-          }
-          if (confirmationData.estimatedDelivery) {
-            confirmationData.estimatedDelivery = new Date(confirmationData.estimatedDelivery);
-          }
-          setOrderConfirmation(confirmationData);
-        }
-      } catch (error) {
-        console.error("Lỗi khi lấy dữ liệu xác nhận đơn hàng:", error);
-      } finally {
-        setIsLoading(false);
+    if (!urlOrderId) {
+      setIsLoading(false);
+      return;
+    }
+
+    // Kiểm tra xem orderConfirmation có tồn tại, orderId có khớp không và có hết hạn không
+    if (orderConfirmation && orderConfirmation.orderId === urlOrderId && !isOrderExpired()) {
+      setIsAuthorized(true);
+      setIsLoading(false);
+
+      // Thiết lập timer để xóa dữ liệu sau 15 phút
+      const timer = setTimeout(
+        () => {
+          clearOrderConfirmation();
+          setIsAuthorized(false);
+        },
+        15 * 60 * 1000, // 15 phút
+      );
+
+      return () => clearTimeout(timer);
+    } else {
+      // Nếu order đã hết hạn, xóa dữ liệu
+      if (orderConfirmation && isOrderExpired()) {
+        clearOrderConfirmation();
+      }
+      setIsLoading(false);
+    }
+  }, [urlOrderId, orderConfirmation, clearOrderConfirmation, isOrderExpired]);
+
+  // Xử lý khi người dùng rời khỏi trang
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (isAuthorized) {
+        clearOrderConfirmation();
       }
     };
 
-    fetchOrderConfirmation();
-  }, []);
+    window.addEventListener("beforeunload", handleBeforeUnload);
 
-  // Nếu không phải trang xác nhận đơn hàng, chuyển hướng về trang sản phẩm
-  useEffect(() => {
-    if (!isLoading && !isCompleted) {
-      router.push("/products");
-    }
-  }, [isLoading, isCompleted, router]);
-
-  // Hàm định dạng ngày tháng
-  const formatDate = (date: Date): string => {
-    return new Intl.DateTimeFormat("vi-VN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    }).format(date);
-  };
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [isAuthorized, clearOrderConfirmation]);
 
   // Hàm xử lý quay lại trang sản phẩm
   const handleContinueShopping = () => {
+    if (isAuthorized) {
+      clearOrderConfirmation();
+    }
     resetCheckout();
     router.push("/products");
   };
@@ -78,8 +89,8 @@ const OrderConfirmation: React.FC = () => {
     );
   }
 
-  // Nếu không có dữ liệu đơn hàng, hiển thị thông báo lỗi
-  if (!orderConfirmation) {
+  // Nếu không có quyền truy cập hoặc không có dữ liệu đơn hàng, hiển thị thông báo lỗi
+  if (!isAuthorized || !orderConfirmation || !orderConfirmation.orderSummary) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
@@ -180,16 +191,13 @@ const OrderConfirmation: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {orderConfirmation.orderSummary.items.map((item, index) => (
+                  {orderConfirmation.orderSummary.cart.products.map((item, index) => (
                     <div key={index} className="flex items-center justify-between border-b pb-4">
                       <div className="flex-1">
                         <h3 className="text-destructive">{item.title}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Số lượng: {item.quantity} × {formatPrice(item.price)}
-                        </p>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold">{formatPrice(item.total)}</p>
+                        <p className="font-semibold">{formatPrice(item.discountedTotal)}</p>
                       </div>
                     </div>
                   ))}
@@ -206,23 +214,11 @@ const OrderConfirmation: React.FC = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span>Tạm tính</span>
-                    <span>{formatPrice(orderConfirmation.orderSummary.subtotal)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Phí vận chuyển</span>
-                    <span>{formatPrice(orderConfirmation.orderSummary.shippingFee)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Thuế (10%)</span>
-                    <span>{formatPrice(orderConfirmation.orderSummary.tax)}</span>
-                  </div>
                   <div className="border-t pt-2">
                     <div className="flex justify-between font-semibold text-lg">
                       <span>Tổng cộng</span>
                       <span className="text-success">
-                        {formatPrice(orderConfirmation.orderSummary.total)}
+                        {formatPrice(orderConfirmation.orderSummary.cart.discountedTotal)}
                       </span>
                     </div>
                   </div>
@@ -240,6 +236,26 @@ const OrderConfirmation: React.FC = () => {
         </div>
       </div>
     </main>
+  );
+};
+
+/**
+ * Component hiển thị trang xác nhận đơn hàng
+ * Hiển thị thông tin chi tiết về đơn hàng đã đặt thành công
+ */
+const OrderConfirmation: React.FC = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex justify-center items-center min-h-[60vh]">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-success"></div>
+          </div>
+        </div>
+      }
+    >
+      <OrderConfirmationContent />
+    </Suspense>
   );
 };
 

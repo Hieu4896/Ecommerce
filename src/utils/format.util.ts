@@ -36,4 +36,13 @@ const formatExpiryDate = (value: string): string => {
   return cleaned;
 };
 
-export { formatPrice, formatCardNumber, formatExpiryDate };
+// Hàm định dạng ngày tháng
+const formatDate = (date: Date): string => {
+  return new Intl.DateTimeFormat("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date);
+};
+
+export { formatPrice, formatCardNumber, formatExpiryDate, formatDate };

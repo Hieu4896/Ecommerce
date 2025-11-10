@@ -5,6 +5,8 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import { SessionUser, LoginCredentials } from "@src/types/auth.type";
 import { authService } from "@services/auth.service";
 import { getErrorMessage } from "@src/utils/error.util";
+import { toSessionUser } from "@src/utils/auth.util";
+import { createSecureStorage } from "@src/utils/storage.util";
 
 /**
  * Interface cho state của giỏ hàng
@@ -68,7 +70,7 @@ export const useAuthStore = create<AuthStore>()(
 
           // Cập nhật state
           set({
-            user: sessionUser,
+            user: toSessionUser(sessionUser),
             isAuthenticated: true,
             isLoading: false,
             error: null,
@@ -120,7 +122,7 @@ export const useAuthStore = create<AuthStore>()(
           const sessionUser = await authService.refreshToken();
 
           set({
-            user: sessionUser,
+            user: toSessionUser(sessionUser),
             isAuthenticated: true,
             isLoading: false,
             error: null,
@@ -158,19 +160,18 @@ export const useAuthStore = create<AuthStore>()(
        * Khôi phục session từ cookies nếu localStorage trống
        */
       restoreSession: async (): Promise<boolean> => {
-        // Kiểm tra xem localStorage có trống không
-        const hasLocalStorageData = localStorage.getItem("auth-storage");
+        // Kiểm tra xem localStorage có trống không (chỉ trên client)
+        const hasLocalStorageData =
+          typeof window !== "undefined" ? localStorage.getItem("auth-storage") : null;
 
         if (!hasLocalStorageData) {
           try {
             // Lấy thông tin user sau khi khôi phục thành công
             const sessionUser = await authService.getCurrentUser();
-            console.log("sessionUser", sessionUser);
-
             if (sessionUser) {
               // Cập nhật state
               set({
-                user: sessionUser,
+                user: toSessionUser(sessionUser),
                 isAuthenticated: true,
                 isLoading: false,
               });
@@ -186,7 +187,7 @@ export const useAuthStore = create<AuthStore>()(
     }),
     {
       name: "auth-storage", // Tên key trong localStorage
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => createSecureStorage()),
       // Chỉ persist các trường cần thiết
       partialize: (state) => {
         // Nếu không có user hoặc chưa authenticated, không persist gì cả

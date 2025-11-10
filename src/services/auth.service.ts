@@ -40,8 +40,8 @@ class AuthService extends BaseService {
       "/api/auth/logout",
       {},
     );
-    // Nếu API trả về flag clearLocalStorage, xóa localStorage
-    if (data.clearLocalStorage) {
+    // Nếu API trả về flag clearLocalStorage, xóa localStorage (chỉ trên client)
+    if (data.clearLocalStorage && typeof window !== "undefined") {
       localStorage.removeItem("auth-storage");
       this.logDebug("Đã xóa localStorage theo yêu cầu của API");
     }

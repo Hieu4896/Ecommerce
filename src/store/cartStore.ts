@@ -10,6 +10,7 @@ import {
   updateCartWithItems,
 } from "@utils/cart.util";
 import { checkAuthentication } from "@src/utils/auth.util";
+import { createSecureStorage } from "@src/utils/storage.util";
 
 /**
  * Interface cho state của giỏ hàng
@@ -157,13 +158,13 @@ export const useCartStore = create<CartStore>()(
         // Xóa giỏ hàng
         set({ cart: null });
 
-        // Integration với checkout store - reset checkout state
-        try {
-          const { useCheckoutStore } = await import("@src/store/checkoutStore");
-          useCheckoutStore.getState().resetCheckout();
-        } catch (error) {
-          console.error("Lỗi khi reset checkout store:", error);
-        }
+        // // Integration với checkout store - reset checkout state
+        // try {
+        //   const { useCheckoutStore } = await import("@src/store/checkoutStore");
+        //   useCheckoutStore.getState().resetCheckout();
+        // } catch (error) {
+        //   console.error("Lỗi khi reset checkout store:", error);
+        // }
       },
 
       getCartItems: () => {
@@ -180,7 +181,7 @@ export const useCartStore = create<CartStore>()(
     }),
     {
       name: "cart-storage",
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => createSecureStorage()),
     },
   ),
 );

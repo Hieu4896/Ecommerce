@@ -225,6 +225,45 @@ abstract class BaseService {
   }
 
   /**
+   * Thực hiện PUT request với timeout
+   * @param url - URL để gửi request
+   * @param data - Dữ liệu để gửi trong body
+   * @param timeout - Thời gian chờ tối đa (ms)
+   * @returns Promise với dữ liệu JSON
+   */
+  protected async fetchPutWithTimeout<T>(
+    url: string,
+    data: unknown,
+    timeout: number = 10000,
+  ): Promise<T> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    try {
+      const response = await fetch(url, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      // Kiểm tra response status trước khi xử lý
+      if (!response.ok) {
+        return await this.handleApiError(response, url);
+      }
+
+      return await this.handleResponse(response);
+    } catch (error) {
+      clearTimeout(timeoutId);
+      throw this.handleFetchError(error, url);
+    }
+  }
+
+  /**
    * Thực hiện POST request với retry và timeout
    * @param url - URL để gửi request
    * @param data - Dữ liệu để gửi trong body

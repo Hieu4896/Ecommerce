@@ -1,4 +1,4 @@
-import Header from "@src/components/layout/Header";
+import Header from "@src/components/layout/header";
 import { Toaster } from "react-hot-toast";
 
 export default function Authenticatedayout({

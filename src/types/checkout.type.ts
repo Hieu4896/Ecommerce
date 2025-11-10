@@ -1,4 +1,4 @@
-import { CartItem } from "./cart.type";
+import { Cart } from "./cart.type";
 
 /**
  * Interface cho thông tin địa chỉ giao hàng
@@ -35,18 +35,14 @@ export interface CheckoutForm {
  * Interface cho tóm tắt đơn hàng
  */
 export interface OrderSummary {
-  items: CartItem[];
-  subtotal: number;
-  shippingFee: number;
-  tax: number;
-  total: number;
+  cart: Cart;
+  formData: CheckoutForm | null;
 }
 
 /**
  * Interface cho state của checkout store
  */
 export interface CheckoutState {
-  formData: CheckoutForm | null;
   orderSummary: OrderSummary | null;
   isProcessing: boolean;
   isCompleted: boolean;

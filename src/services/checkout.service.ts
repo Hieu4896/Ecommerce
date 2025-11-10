@@ -1,6 +1,5 @@
 import BaseService from "./base.service";
 import { UserInfo } from "@src/types/auth.type";
-import { CartItem } from "@src/types/cart.type";
 import {
   ShippingAddress,
   PaymentInfo,
@@ -25,6 +24,18 @@ interface PaymentValidationResult {
  * Kế thừa từ BaseService để sử dụng các phương thức chung
  */
 class CheckoutService extends BaseService {
+  private static instance: CheckoutService;
+
+  /**
+   * Singleton pattern để đảm bảo chỉ có một instance của CheckoutService
+   * @returns Instance của CheckoutService
+   */
+  public static getInstance(): CheckoutService {
+    if (!CheckoutService.instance) {
+      CheckoutService.instance = new CheckoutService();
+    }
+    return CheckoutService.instance;
+  }
   /**
    * Cập nhật thông tin địa chỉ của user
    * @param userId - ID của người dùng cần cập nhật
@@ -46,48 +57,9 @@ class CheckoutService extends BaseService {
       email: string;
     },
   ): Promise<UserInfo> {
-    try {
-      this.logDebug("Bắt đầu cập nhật thông tin địa chỉ người dùng", { userId, addressData });
-
-      const url = this.buildUrl(`/users/${userId}`);
-
-      const response = await fetch(url, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(addressData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const errorMessage =
-          errorData.message || `Lỗi khi cập nhật thông tin người dùng: ${response.status}`;
-        this.logError(
-          {
-            message: errorMessage,
-            status: response.status,
-          },
-          url,
-        );
-        throw new Error(errorMessage);
-      }
-
-      const updatedUser: UserInfo = await response.json();
-      this.logDebug("Cập nhật thông tin địa chỉ thành công", { userId });
-
-      return updatedUser;
-    } catch (error) {
-      this.logError(
-        {
-          message:
-            error instanceof Error ? error.message : "Lỗi không xác định khi cập nhật địa chỉ",
-          status: 0,
-        },
-        `/users/${userId}`,
-      );
-      throw error;
-    }
+    this.logDebug("Bắt đầu cập nhật thông tin địa chỉ người dùng", { userId, addressData });
+    const url = this.buildUrl(`/users/${userId}`);
+    return await this.fetchPutWithTimeout<UserInfo>(url, addressData);
   }
 
   /**
@@ -189,41 +161,7 @@ class CheckoutService extends BaseService {
 
     return validationResult;
   }
-
-  /**
-   * Tính toán tóm tắt đơn hàng
-   * @param cartItems - Danh sách sản phẩm trong giỏ hàng
-   * @returns OrderSummary - Tóm tắt đơn hàng
-   */
-  public calculateOrderSummary(cartItems: CartItem[]): OrderSummary {
-    this.logDebug("Bắt đầu tính toán tóm tắt đơn hàng", { cartItems });
-
-    // Tính subtotal từ cart items
-    const subtotal = cartItems.reduce((total, item) => total + item.total, 0);
-
-    // Tính shipping fee (fixed 30,000 VND)
-    const shippingFee = 30000;
-
-    // Tính tax (10% của subtotal)
-    const tax = Math.round(subtotal * 0.1);
-
-    // Tính total = subtotal + shippingFee + tax
-    const total = subtotal + shippingFee + tax;
-
-    const orderSummary: OrderSummary = {
-      items: cartItems,
-      subtotal,
-      shippingFee,
-      tax,
-      total,
-    };
-
-    this.logDebug("Tính toán tóm tắt đơn hàng thành công", orderSummary);
-
-    return orderSummary;
-  }
 }
 
 // Export instance của CheckoutService để sử dụng trong toàn bộ ứng dụng
-const checkoutService = new CheckoutService();
-export default checkoutService;
+export const checkoutService = CheckoutService.getInstance();

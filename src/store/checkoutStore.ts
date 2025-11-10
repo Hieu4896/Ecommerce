@@ -2,19 +2,19 @@
 
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { CheckoutState, CheckoutForm, OrderSummary } from "@src/types/checkout.type";
-import checkoutService from "@src/services/checkout.service";
+import { CheckoutState, OrderConfirmation, OrderSummary } from "@src/types/checkout.type";
+import { checkoutService } from "@src/services/checkout.service";
 import { useAuthStore } from "./authStore";
 import { useCartStore } from "./cartStore";
+import { useOrderStore } from "./orderStore";
+import { createSecureStorage } from "@src/utils/storage.util";
 
 /**
  * Interface cho actions của checkout store
  */
 interface CheckoutActions {
-  // Thiết lập form data
-  setFormData: (formData: CheckoutForm) => void;
   // Thiết lập order summary
-  setOrderSummary: (orderSummary: OrderSummary) => void;
+  setOrderSummary: (orderSummary: OrderSummary | null) => void;
   // Thiết lập processing state
   setProcessing: (isProcessing: boolean) => void;
   // Thiết lập completed state
@@ -24,7 +24,7 @@ interface CheckoutActions {
   // Reset checkout state
   resetCheckout: () => void;
   // Xử lý checkout
-  processCheckout: () => Promise<void>;
+  processCheckout: () => Promise<OrderConfirmation>;
 }
 
 /**
@@ -39,15 +39,12 @@ export const useCheckoutStore = create<CheckoutStore>()(
   persist(
     (set, get) => ({
       // State ban đầu
-      formData: null,
       orderSummary: null,
       isProcessing: false,
       isCompleted: false,
       error: null,
 
       // Actions
-      setFormData: (formData) => set({ formData }),
-
       setOrderSummary: (orderSummary) => set({ orderSummary }),
 
       setProcessing: (isProcessing) => set({ isProcessing }),
@@ -58,7 +55,6 @@ export const useCheckoutStore = create<CheckoutStore>()(
 
       resetCheckout: () => {
         set({
-          formData: null,
           orderSummary: null,
           isProcessing: false,
           isCompleted: false,
@@ -66,26 +62,12 @@ export const useCheckoutStore = create<CheckoutStore>()(
         });
       },
 
-      /**
-       * Xử lý quy trình checkout hoàn chỉnh
-       * 1. Kiểm tra authentication
-       * 2. Validate payment info
-       * 3. Cập nhật user address
-       * 4. Xử lý order
-       * 5. Clear cart
-       * 6. Set completion state
-       */
-      processCheckout: async () => {
-        const { formData, orderSummary } = get();
-        // Kiểm tra form data và order summary
-        if (!formData) {
+      processCheckout: async (): Promise<OrderConfirmation> => {
+        const { orderSummary } = get();
+        // Kiểm tra order summary
+        if (!orderSummary || !orderSummary.formData) {
           set({ error: "Thiếu thông tin thanh toán" });
-          return;
-        }
-
-        if (!orderSummary) {
-          set({ error: "Thiếu thông tin đơn hàng" });
-          return;
+          throw new Error("Thiếu thông tin thanh toán");
         }
 
         try {
@@ -99,7 +81,9 @@ export const useCheckoutStore = create<CheckoutStore>()(
           }
 
           // 2. Validate payment info
-          const paymentValidation = checkoutService.validatePaymentInfo(formData.paymentInfo);
+          const paymentValidation = checkoutService.validatePaymentInfo(
+            orderSummary.formData.paymentInfo,
+          );
           if (!paymentValidation.isValid) {
             const errorMessage = Object.values(paymentValidation.errors).join(", ");
             throw new Error(`Thông tin thanh toán không hợp lệ: ${errorMessage}`);
@@ -109,18 +93,19 @@ export const useCheckoutStore = create<CheckoutStore>()(
           try {
             const addressData = {
               address: {
-                address: formData.shippingAddress.streetAddress,
+                address: orderSummary.formData.shippingAddress.streetAddress,
                 city: "Hà Nội", // Mặc định, có thể lấy từ form nếu cần
                 state: "Hà Nội", // Mặc định, có thể lấy từ form nếu cần
                 stateCode: "HN", // Mặc định, có thể lấy từ form nếu cần
-                postalCode: formData.shippingAddress.postalCode,
+                postalCode: orderSummary.formData.shippingAddress.postalCode,
                 country: "Việt Nam", // Mặc định, có thể lấy từ form nếu cần
               },
-              phone: formData.shippingAddress.phone,
-              email: formData.shippingAddress.email,
+              phone: orderSummary.formData.shippingAddress.phone,
+              email: orderSummary.formData.shippingAddress.email,
             };
 
-            await checkoutService.updateUserAddress(authStore.user.id, addressData);
+            const res = await checkoutService.updateUserAddress(authStore.user.id, addressData);
+            console.log("processCheckout - res", res);
           } catch (error) {
             console.error("Lỗi khi cập nhật địa chỉ:", error);
             // Không throw error ở đây, vẫn tiếp tục quy trình
@@ -128,12 +113,13 @@ export const useCheckoutStore = create<CheckoutStore>()(
 
           // 4. Xử lý order
           const orderConfirmation = await checkoutService.processOrder(
-            formData.shippingAddress,
+            orderSummary.formData.shippingAddress,
             orderSummary,
           );
 
-          // 5. Lưu thông tin xác nhận đơn hàng vào localStorage
-          localStorage.setItem("order-confirmation", JSON.stringify(orderConfirmation));
+          // 5. Lưu thông tin xác nhận đơn hàng vào orderStore
+          const orderStore = useOrderStore.getState();
+          orderStore.setOrderConfirmation(orderConfirmation);
 
           // 6. Clear cart
           const cartStore = useCartStore.getState();
@@ -146,7 +132,9 @@ export const useCheckoutStore = create<CheckoutStore>()(
             error: null,
           });
 
+          // 8. Return order confirmation
           console.log("Đơn hàng đã được xử lý thành công:", orderConfirmation);
+          return orderConfirmation;
         } catch (error) {
           const errorMessage =
             error instanceof Error ? error.message : "Lỗi không xác định khi xử lý thanh toán";
@@ -161,10 +149,9 @@ export const useCheckoutStore = create<CheckoutStore>()(
     }),
     {
       name: "checkout-storage",
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => createSecureStorage()),
       // Chỉ persist các trường cần thiết
       partialize: (state) => ({
-        formData: state.formData,
         orderSummary: state.orderSummary,
         isCompleted: state.isCompleted,
       }),

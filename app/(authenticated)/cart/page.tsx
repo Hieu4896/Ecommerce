@@ -14,25 +14,16 @@ import { EmptyCart } from "@src/components/cart/EmptyCart";
  * Hiển thị danh sách sản phẩm trong giỏ hàng và các thao tác liên quan
  */
 export default function CartPage() {
-  const {
-    cart,
-    handleQuantityChange,
-    handleRemoveItem,
-    handleCheckout,
-    handleClearCart,
-    isCartEmpty,
-  } = useCart();
-  const isEmpty = isCartEmpty();
-  const isExists = !isEmpty && cart?.products && cart.products.length > 0;
+  const { cart, handleQuantityChange, handleRemoveItem, handleCheckout, handleClearCart } =
+    useCart();
+  const isExists = cart && cart?.products && cart.products.length > 0;
 
-  if (isEmpty)
+  if (!isExists)
     return (
       <div className="container px-4 py-8">
         <EmptyCart />
       </div>
     );
-
-  if (!isExists) return null;
 
   return (
     <div className="container px-4 py-8">

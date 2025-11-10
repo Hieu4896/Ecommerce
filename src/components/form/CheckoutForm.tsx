@@ -7,12 +7,10 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { useCheckoutStore } from "@src/store/checkoutStore";
 import { useCart } from "@hooks/useCart";
 import { checkoutSchema } from "../schema/checkout.schema";
-import checkoutService from "@services/checkout.service";
 import { ShippingForm } from "./ShippingForm";
 import { PaymentForm } from "./PaymentForm";
 import { Button } from "../ui/button";
 import { EmptyCart } from "../cart/EmptyCart";
-
 /**
  * Component CheckoutForm - Form thanh toán hoàn chỉnh
  * Sử dụng react-hook-form và yup validation
@@ -22,15 +20,7 @@ const CheckoutForm: React.FC = () => {
   const router = useRouter();
 
   // Lấy state và actions từ stores
-  const {
-    orderSummary,
-    isProcessing,
-    isCompleted,
-    error,
-    setFormData,
-    setOrderSummary,
-    processCheckout,
-  } = useCheckoutStore();
+  const { isProcessing, error, setOrderSummary, processCheckout } = useCheckoutStore();
 
   const { cart } = useCart();
 
@@ -55,20 +45,15 @@ const CheckoutForm: React.FC = () => {
 
   const { handleSubmit, reset } = methods;
 
-  // Khởi tạo order summary từ cart khi component mount
+  // Lưu orderSummary từ cart khi cart thay đổi
   useEffect(() => {
-    if (cart && cart.products.length > 0 && !orderSummary) {
-      const summary = checkoutService.calculateOrderSummary(cart.products);
-      setOrderSummary(summary);
+    if (cart && cart.products.length > 0) {
+      setOrderSummary({
+        cart,
+        formData: null,
+      });
     }
-  }, [cart, orderSummary, setOrderSummary]);
-
-  // Chuyển hướng đến trang xác nhận đơn hàng khi checkout hoàn thành
-  useEffect(() => {
-    if (isCompleted) {
-      router.push("/checkout/confirmation");
-    }
-  }, [isCompleted, router]);
+  }, [cart, setOrderSummary]);
 
   // Xử lý submit form
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -93,11 +78,21 @@ const CheckoutForm: React.FC = () => {
         },
       };
 
-      // Lưu form data vào store
-      setFormData(checkoutData);
+      // Cập nhật orderSummary với formData
+      if (cart) {
+        setOrderSummary({
+          cart,
+          formData: checkoutData,
+        });
+      }
 
-      // Xử lý checkout
-      await processCheckout();
+      // Xử lý checkout và lấy orderConfirmation
+      const orderConfirmation = await processCheckout();
+
+      // Chuyển hướng đến trang xác nhận đơn hàng với orderId
+      if (orderConfirmation) {
+        router.push(`/checkout/confirmation?orderId=${orderConfirmation.orderId}`);
+      }
     } catch (error) {
       // Error đã được xử lý trong store
       console.error("Checkout error:", error);
