@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { StorageProtection } from "@src/components/StorageProtection";
+import StorageSecureProvider from "@src/providers/StorageSecureProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,8 +28,7 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col bg-foreground`}
       >
-        <StorageProtection />
-        {children}
+        <StorageSecureProvider>{children}</StorageSecureProvider>
       </body>
     </html>
   );

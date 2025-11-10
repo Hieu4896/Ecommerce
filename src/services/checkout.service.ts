@@ -118,38 +118,44 @@ class CheckoutService extends BaseService {
     const errors: PaymentValidationResult["errors"] = {};
     let isValid = true;
 
-    // Validate card number (format: 1234-5678-9012-3456)
-    const cardNumberPattern = /^\d{4}-\d{4}-\d{4}-\d{4}$/;
-    if (!cardNumberPattern.test(paymentInfo.cardNumber)) {
-      errors.cardNumber = "Số thẻ không hợp lệ. Định dạng đúng: 1234-5678-9012-3456";
-      isValid = false;
-    }
-
-    // Validate expiry date (format: MM/YY)
-    const expiryPattern = /^(0[1-9]|1[0-2])\/\d{2}$/;
-    if (!expiryPattern.test(paymentInfo.cardExpiry)) {
-      errors.cardExpiry = "Ngày hết hạn không hợp lệ. Định dạng đúng: MM/YY";
-      isValid = false;
-    } else {
-      // Kiểm tra xem thẻ đã hết hạn chưa
-      const [month, year] = paymentInfo.cardExpiry.split("/");
-      const currentYear = new Date().getFullYear() % 100;
-      const currentMonth = new Date().getMonth() + 1;
-
-      const expiryYear = parseInt(year);
-      const expiryMonth = parseInt(month);
-
-      if (expiryYear < currentYear || (expiryYear === currentYear && expiryMonth < currentMonth)) {
-        errors.cardExpiry = "Thẻ đã hết hạn";
+    // Chỉ validate thông tin thẻ khi phương thức thanh toán là "card"
+    if (paymentInfo.paymentMethod === "card") {
+      // Validate card number (format: 1234-5678-9012-3456)
+      const cardNumberPattern = /^\d{4}-\d{4}-\d{4}-\d{4}$/;
+      if (!cardNumberPattern.test(paymentInfo.cardNumber)) {
+        errors.cardNumber = "Số thẻ không hợp lệ. Định dạng đúng: 1234-5678-9012-3456";
         isValid = false;
       }
-    }
 
-    // Validate CVV (3 digits)
-    const cvvPattern = /^\d{3}$/;
-    if (!cvvPattern.test(paymentInfo.cardCVV)) {
-      errors.cardCVV = "CVV không hợp lệ. Phải gồm 3 chữ số";
-      isValid = false;
+      // Validate expiry date (format: MM/YY)
+      const expiryPattern = /^(0[1-9]|1[0-2])\/\d{2}$/;
+      if (!expiryPattern.test(paymentInfo.cardExpiry)) {
+        errors.cardExpiry = "Ngày hết hạn không hợp lệ. Định dạng đúng: MM/YY";
+        isValid = false;
+      } else {
+        // Kiểm tra xem thẻ đã hết hạn chưa
+        const [month, year] = paymentInfo.cardExpiry.split("/");
+        const currentYear = new Date().getFullYear() % 100;
+        const currentMonth = new Date().getMonth() + 1;
+
+        const expiryYear = parseInt(year);
+        const expiryMonth = parseInt(month);
+
+        if (
+          expiryYear < currentYear ||
+          (expiryYear === currentYear && expiryMonth < currentMonth)
+        ) {
+          errors.cardExpiry = "Thẻ đã hết hạn";
+          isValid = false;
+        }
+      }
+
+      // Validate CVV (3 digits)
+      const cvvPattern = /^\d{3}$/;
+      if (!cvvPattern.test(paymentInfo.cardCVV)) {
+        errors.cardCVV = "CVV không hợp lệ. Phải gồm 3 chữ số";
+        isValid = false;
+      }
     }
 
     const validationResult: PaymentValidationResult = {

@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
-import { useSecureStorage, clearSecureStorage } from "@src/utils/storage.util";
+import { ReactNode, useEffect } from "react";
+import { useSecureStorage } from "@src/hooks/useSecureStorage";
+import { clearSecureStorage } from "@src/utils/storage.util";
 
 /**
  * Interface mở rộng cho Window object để hỗ trợ clearSecureStorage
@@ -11,17 +12,20 @@ interface ExtendedWindow extends Window {
 }
 
 /**
- * Component StorageProtection
+ * StorageSecureProvider Component
  *
  * Component này chịu trách nhiệm:
  * 1. Khởi tạo hệ thống bảo vệ localStorage khi ứng dụng khởi chạy
  * 2. Cung cấp phương thức xóa dữ liệu bảo vệ qua window object cho debugging
- * 3. Không render UI (null component) - chỉ xử lý logic side-effect
+ * 3. Bao bọc các component con với chức năng bảo vệ storage
  *
  * @component
- * @returns {null} Component không render gì cả
+ * @param {ReactNode} children - Các component con được bao bọc
+ * @returns {JSX.Element} Provider component với children
  */
-export function StorageProtection(): null {
+export default function StorageSecureProvider({ children }: { children: ReactNode }) {
+  console.log("StorageSercureProvider running");
+
   // Khởi tạo secure storage hook để bảo vệ dữ liệu localStorage
   const cleanup = useSecureStorage();
 
@@ -47,6 +51,5 @@ export function StorageProtection(): null {
     }
   }, [cleanup]);
 
-  // Component không render UI
-  return null;
+  return <>{children}</>;
 }

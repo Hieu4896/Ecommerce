@@ -1,10 +1,5 @@
+import { ENCRYPTION_KEY, PROTECTED_KEYS } from "@src/constants/storage.constant";
 import CryptoJS from "crypto-js";
-
-// Secret key để mã hóa
-const ENCRYPTION_KEY = process.env.NEXT_PUBLIC_STORAGE_KEY || "pawsy-ecommerce-secret-key-2024";
-
-// Danh sách các key cần bảo vệ
-const PROTECTED_KEYS = ["auth-storage", "cart-storage", "checkout-storage", "order-storage"];
 
 /**
  * Interface cho dữ liệu được mã hóa
@@ -18,7 +13,7 @@ interface EncryptedData {
 /**
  * Mã hóa dữ liệu
  */
-const encryptData = (data: unknown): string => {
+export const encryptData = (data: unknown): string => {
   try {
     const jsonString = JSON.stringify(data);
     const encryptedData = CryptoJS.AES.encrypt(jsonString, ENCRYPTION_KEY).toString();
@@ -40,7 +35,7 @@ const encryptData = (data: unknown): string => {
 /**
  * Giải mã dữ liệu
  */
-const decryptData = <T = unknown>(encryptedString: string): T => {
+export const decryptData = <T = unknown>(encryptedString: string): T => {
   try {
     const encryptedObject: EncryptedData = JSON.parse(encryptedString);
     const decryptedBytes = CryptoJS.AES.decrypt(encryptedObject.data, ENCRYPTION_KEY);
@@ -116,7 +111,7 @@ export const createSecureStorage = () => {
 /**
  * Kiểm tra và dọn dẹp dữ liệu không hợp lệ
  */
-const validateAndCleanup = (): void => {
+export const validateAndCleanup = (): void => {
   if (typeof window === "undefined") return;
 
   PROTECTED_KEYS.forEach((key) => {
@@ -141,42 +136,6 @@ const validateAndCleanup = (): void => {
       localStorage.removeItem(key);
     }
   });
-};
-
-/**
- * Hook để bảo vệ localStorage
- */
-export const useSecureStorage = (): (() => void) | void => {
-  if (typeof window === "undefined") return;
-
-  // Chạy validation ngay lập tức
-  validateAndCleanup();
-
-  // Thiết lập interval để kiểm tra định kỳ (mỗi 5 phút)
-  const interval = setInterval(validateAndCleanup, 5 * 60 * 1000);
-
-  // Event listener để theo dõi thay đổi từ tab khác
-  const handleStorageChange = (event: StorageEvent) => {
-    if (PROTECTED_KEYS.includes(event.key || "")) {
-      if (event.newValue) {
-        try {
-          decryptData(event.newValue);
-        } catch (error) {
-          console.error(`Phát hiện thay đổi không hợp lệ cho ${event.key}:`, error);
-          localStorage.removeItem(event.key!);
-          window.location.reload();
-        }
-      }
-    }
-  };
-
-  window.addEventListener("storage", handleStorageChange);
-
-  // Cleanup
-  return () => {
-    clearInterval(interval);
-    window.removeEventListener("storage", handleStorageChange);
-  };
 };
 
 /**

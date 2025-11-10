@@ -111,7 +111,6 @@ export const CartItem = ({ cartItem, onRemove, onQuantityChange }: CartItemProps
               </Button>
             </div>
 
-            {/* Ẩn trên mobile, hiển thị trên desktop */}
             <div className="font-semibold flex gap-3 text-primary-foreground">
               <span className="text-muted-foreground line-through">
                 {formatPrice(cartItem.total)}

@@ -11,6 +11,7 @@ export const PaymentForm: React.FC = () => {
   const {
     setValue,
     watch,
+    clearErrors,
     formState: { errors },
   } = useFormContext();
 
@@ -19,6 +20,21 @@ export const PaymentForm: React.FC = () => {
   const cardNumber = watch("cardNumber");
   const cardExpiry = watch("cardExpiry");
   const cardCVV = watch("cardCVV");
+
+  // Xử lý thay đổi phương thức thanh toán - reset lỗi và state liên quan đến thẻ
+  const handlePaymentMethodChange = (value: "card" | "bank" | "cash") => {
+    setValue("paymentMethod", value);
+
+    // Reset lỗi của các trường thẻ khi đổi phương thức thanh toán
+    clearErrors(["cardNumber", "cardExpiry", "cardCVV"]);
+
+    // Reset giá trị các trường thẻ nếu không chọn phương thức thẻ
+    if (value !== "card") {
+      setValue("cardNumber", "");
+      setValue("cardExpiry", "");
+      setValue("cardCVV", "");
+    }
+  };
 
   // Xử lý thay đổi card number với auto-format
   const handleCardNumberChange = (value: string) => {
@@ -48,7 +64,7 @@ export const PaymentForm: React.FC = () => {
         label="Phương thức thanh toán"
         name="paymentMethod"
         value={paymentMethod}
-        onChange={(e) => setValue("paymentMethod", e.target.value as "card" | "bank" | "cash")}
+        onChange={(e) => handlePaymentMethodChange(e.target.value as "card" | "bank" | "cash")}
         error={errors.paymentMethod?.message as string}
         required
         options={[
@@ -58,7 +74,7 @@ export const PaymentForm: React.FC = () => {
         ]}
       />
 
-      {/* Card Payment Fields */}
+      {/* Card Payment Fields - Chỉ hiển thị và validate khi chọn phương thức thẻ */}
       {paymentMethod === "card" && (
         <div className="space-y-4 mt-4">
           <FormField
@@ -69,7 +85,7 @@ export const PaymentForm: React.FC = () => {
             error={errors.cardNumber?.message as string}
             placeholder="1234-5678-9012-3456"
             maxLength={19}
-            required
+            required={paymentMethod === "card"}
           />
 
           <div className="grid grid-cols-2 gap-4">
@@ -81,7 +97,7 @@ export const PaymentForm: React.FC = () => {
               error={errors.cardExpiry?.message as string}
               placeholder="MM/YY"
               maxLength={5}
-              required
+              required={paymentMethod === "card"}
             />
 
             <FormField
@@ -92,7 +108,7 @@ export const PaymentForm: React.FC = () => {
               error={errors.cardCVV?.message as string}
               placeholder="123"
               maxLength={3}
-              required
+              required={paymentMethod === "card"}
             />
           </div>
         </div>

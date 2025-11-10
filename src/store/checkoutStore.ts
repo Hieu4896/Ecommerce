@@ -133,7 +133,6 @@ export const useCheckoutStore = create<CheckoutStore>()(
           });
 
           // 8. Return order confirmation
-          console.log("Đơn hàng đã được xử lý thành công:", orderConfirmation);
           return orderConfirmation;
         } catch (error) {
           const errorMessage =

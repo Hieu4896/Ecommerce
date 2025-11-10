@@ -169,9 +169,6 @@ const OrderConfirmationContent: React.FC = () => {
                   <p className="text-sm">{orderConfirmation.shippingAddress.phone}</p>
                   <p className="text-sm">{orderConfirmation.shippingAddress.email}</p>
                   <p className="text-sm">{orderConfirmation.shippingAddress.streetAddress}</p>
-                  {orderConfirmation.shippingAddress.detailedAddress && (
-                    <p className="text-sm">{orderConfirmation.shippingAddress.detailedAddress}</p>
-                  )}
                   <p className="text-sm">
                     {orderConfirmation.shippingAddress.postalCode}, Việt Nam
                   </p>
@@ -195,6 +192,7 @@ const OrderConfirmationContent: React.FC = () => {
                     <div key={index} className="flex items-center justify-between border-b pb-4">
                       <div className="flex-1">
                         <h3 className="text-destructive">{item.title}</h3>
+                        <p className="text-sm text-muted-foreground">{item.quantity}</p>
                       </div>
                       <div className="text-right">
                         <p className="font-semibold">{formatPrice(item.discountedTotal)}</p>
