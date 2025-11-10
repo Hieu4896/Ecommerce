@@ -72,6 +72,7 @@ export interface DeleteCartResponse {
  */
 export interface UseCartReturn {
   cart: Cart | null;
+  isCartEmpty: () => boolean;
   handleAddToCart: (product: Product, quantity: number) => Promise<void>;
   handleQuantityChange: (productId: number, quantity: number) => Promise<void>;
   handleRemoveItem: (productId: number) => Promise<void>;

@@ -12,8 +12,16 @@ import { toast } from "react-hot-toast";
  * @returns UseCartReturn - Trạng thái và functions của giỏ hàng
  */
 export function useCart(): UseCartReturn {
-  const { cart, addToCart, updateQuantity, removeFromCart, clearCart, setLoading, setError } =
-    useCartStore();
+  const {
+    cart,
+    addToCart,
+    updateQuantity,
+    removeFromCart,
+    clearCart,
+    setLoading,
+    setError,
+    isCartEmpty,
+  } = useCartStore();
 
   /**
    * Thêm sản phẩm vào giỏ hàng
@@ -106,10 +114,7 @@ export function useCart(): UseCartReturn {
   const handleClearCart = useCallback(async (): Promise<void> => {
     if (!cart) return;
 
-    if (
-      typeof window !== "undefined" &&
-      window.confirm("Bạn có chắc chắn muốn xóa toàn bộ giỏ hàng?")
-    ) {
+    {
       try {
         // Sử dụng store action thay vì API call
         clearCart();
@@ -146,5 +151,6 @@ export function useCart(): UseCartReturn {
     handleRemoveItem,
     handleClearCart,
     handleCheckout,
+    isCartEmpty,
   };
 }

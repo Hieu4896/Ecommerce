@@ -23,9 +23,7 @@ interface CartState {
 /**
  * Interface cho actions của giỏ hàng
  */
-interface CartActions {
-  // Thiết lập giỏ hàng
-  setCart: (cart: Cart | null) => void;
+export interface CartActions {
   // Thêm sản phẩm vào giỏ hàng
   addToCart: (product: Product, quantity: number) => void;
   // Cập nhật số lượng sản phẩm
@@ -38,20 +36,10 @@ interface CartActions {
   setLoading: (isLoading: boolean) => void;
   // Thiết lập error state
   setError: (error: string | null) => void;
-
-  // Các actions mới cho checkout
-  // Lấy tổng giá trị giỏ hàng
-  getCartTotal: () => number;
-  // Đếm số lượng items trong giỏ hàng
-  getCartItemsCount: () => number;
   // Lấy danh sách items trong giỏ hàng
   getCartItems: () => CartItem[];
-  // Tính subtotal (trước khi áp dụng giảm giá)
-  calculateSubtotal: () => number;
   // Kiểm tra giỏ hàng có rỗng không
   isCartEmpty: () => boolean;
-  // Validate cart items trước khi checkout
-  validateCartItems: () => { isValid: boolean; errors: string[] };
 }
 
 /**
@@ -71,7 +59,10 @@ export const useCartStore = create<CartStore>()(
       error: null,
 
       // Actions
-      setCart: (cart) => set({ cart }),
+
+      setLoading: (isLoading) => set({ isLoading }),
+
+      setError: (error) => set({ error }),
 
       addToCart: (product, quantity) => {
         // Kiểm tra authentication trước khi thực hiện thao tác
@@ -154,18 +145,13 @@ export const useCartStore = create<CartStore>()(
         }
       },
 
-      clearCart: async (confirmed = false) => {
+      clearCart: async () => {
         // Kiểm tra authentication trước khi thực hiện thao tác
         try {
           checkAuthentication();
         } catch (error) {
           set({ error: error instanceof Error ? error.message : "Lỗi xác thực" });
           return;
-        }
-
-        // Nếu chưa xác nhận, throw error để component xử lý
-        if (!confirmed) {
-          throw new Error("Vui lòng xác nhận trước khi xóa giỏ hàng");
         }
 
         // Xóa giỏ hàng
@@ -180,69 +166,16 @@ export const useCartStore = create<CartStore>()(
         }
       },
 
-      setLoading: (isLoading) => set({ isLoading }),
-
-      setError: (error) => set({ error }),
-
-      // Các actions mới cho checkout
-      getCartTotal: () => {
-        const { cart } = get();
-        if (!cart) return 0;
-        return cart.discountedTotal;
-      },
-
-      getCartItemsCount: () => {
-        const { cart } = get();
-        if (!cart) return 0;
-        return cart.totalQuantity;
-      },
-
       getCartItems: () => {
         const { cart } = get();
         if (!cart) return [];
         return cart.products;
       },
 
-      calculateSubtotal: () => {
-        const { cart } = get();
-        if (!cart) return 0;
-        return cart.total;
-      },
-
-      isCartEmpty: () => {
+      isCartEmpty: (): boolean => {
         const { cart } = get();
         if (!cart) return true;
         return cart.products.length === 0;
-      },
-
-      validateCartItems: () => {
-        const { cart } = get();
-        const errors: string[] = [];
-
-        if (!cart) {
-          errors.push("Giỏ hàng trống");
-          return { isValid: false, errors };
-        }
-
-        if (cart.products.length === 0) {
-          errors.push("Giỏ hàng không có sản phẩm");
-        }
-
-        // Kiểm tra từng sản phẩm trong giỏ hàng
-        cart.products.forEach((item) => {
-          if (item.quantity <= 0) {
-            errors.push(`Sản phẩm "${item.title}" có số lượng không hợp lệ`);
-          }
-
-          if (item.price <= 0) {
-            errors.push(`Sản phẩm "${item.title}" có giá không hợp lệ`);
-          }
-        });
-
-        return {
-          isValid: errors.length === 0,
-          errors,
-        };
       },
     }),
     {

@@ -12,7 +12,6 @@ import { useAuth } from "@hooks/useAuth";
 
 export function UserMenu() {
   const { user, logout } = useAuth();
-
   if (!user) {
     return null;
   }
@@ -33,7 +32,7 @@ export function UserMenu() {
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="start">
-        <DropdownMenuLabel>{user.name || "User"}</DropdownMenuLabel>
+        <DropdownMenuLabel>{user.firstName || "User"}</DropdownMenuLabel>
         <DropdownMenuGroup>
           <DropdownMenuItem onClick={logout}>
             <LogOutIcon />

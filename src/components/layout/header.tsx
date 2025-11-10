@@ -11,7 +11,6 @@ export default function Header() {
   const { isLoading, isLoggingOut, isAuthenticated, restoreSession } = useAuth();
 
   const [mounted, setMounted] = useState(false);
-  console.log("mounted", mounted);
 
   useEffect(() => {
     setMounted(true);

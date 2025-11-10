@@ -1,4 +1,7 @@
 import React from "react";
+import { Label } from "../ui/label";
+import { Input } from "../ui/input";
+import { Textarea } from "../ui/textarea";
 
 /**
  * Props cho FormField component
@@ -43,21 +46,22 @@ export const FormField: React.FC<FormFieldProps> = ({
   options,
   name,
 }) => {
-  const baseClassName = `w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary ${
+  const baseClassName = `w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary ${
     error ? "border-red-500" : "border-gray-300"
   } ${className}`;
 
   // Render radio buttons nếu có options
   if (options && name) {
     return (
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+      <div className="space-y-2">
+        <Label>
           {label} {required && <span className="text-red-500">*</span>}
-        </label>
-        <div className="grid grid-cols-3 gap-4">
+        </Label>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {options.map((option: { value: string; label: string }) => (
-            <label key={option.value} className="flex items-center">
+            <Label key={option.value} className="flex items-center" htmlFor={option.value}>
               <input
+                id={option.value}
                 type="radio"
                 name={name}
                 value={option.value}
@@ -66,7 +70,7 @@ export const FormField: React.FC<FormFieldProps> = ({
                 className="mr-2"
               />
               <span>{option.label}</span>
-            </label>
+            </Label>
           ))}
         </div>
         {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
@@ -75,24 +79,23 @@ export const FormField: React.FC<FormFieldProps> = ({
   }
 
   return (
-    <div>
-      <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">
+    <div className="space-y-2">
+      <Label htmlFor={id}>
         {label} {required && <span className="text-red-500">*</span>}
-      </label>
+      </Label>
       {rows ? (
-        <textarea
+        <Textarea
           id={id}
           placeholder={placeholder}
           maxLength={maxLength}
           disabled={disabled}
           className={baseClassName}
-          rows={rows}
           value={value}
           onChange={onChange}
           onBlur={onBlur}
         />
       ) : (
-        <input
+        <Input
           id={id}
           type={type}
           placeholder={placeholder}

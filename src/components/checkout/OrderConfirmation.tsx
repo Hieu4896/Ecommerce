@@ -67,17 +67,6 @@ const OrderConfirmation: React.FC = () => {
     router.push("/products");
   };
 
-  // Hàm xử lý in hóa đơn
-  const handlePrintReceipt = () => {
-    window.print();
-  };
-
-  // Hàm xử lý theo dõi đơn hàng (placeholder)
-  const handleTrackOrder = () => {
-    // Placeholder cho chức năng theo dõi đơn hàng
-    alert("Tính năng theo dõi đơn hàng sẽ sớm được cập nhật!");
-  };
-
   // Hiển thị loading state
   if (isLoading) {
     return (
@@ -107,150 +96,150 @@ const OrderConfirmation: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Success Animation and Message */}
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-20 h-20 bg-success rounded-full mb-4">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-10 w-10 text-success-foreground"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M5 13l4 4L19 7"
-          />
+    <main className="min-h-screen my-auto h-full flex flex-col py-6 justify-center  bg-amber-100">
+      <div className="container">
+        {/* Success Animation and Message */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-success rounded-full mb-4">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-10 w-10 text-success-foreground"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M5 13l4 4L19 7"
+            />
+          </div>
+          <h1 className="text-3xl font-bold text-success mb-2">Đặt hàng thành công!</h1>
+          <p className="text-muted-foreground">
+            Cảm ơn bạn đã đặt hàng. Chúng tôi sẽ xử lý đơn hàng của bạn sớm nhất.
+          </p>
         </div>
-        <h1 className="text-3xl font-bold text-success mb-2">Đặt hàng thành công!</h1>
-        <p className="text-muted-foreground">
-          Cảm ơn bạn đã đặt hàng. Chúng tôi sẽ xử lý đơn hàng của bạn sớm nhất.
-        </p>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Order Information */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Order Details */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-xl">Thông tin đơn hàng</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Mã đơn hàng</p>
-                  <p className="font-semibold">#{orderConfirmation.orderId}</p>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Order Information */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Order Details */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl">Thông tin đơn hàng</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Mã đơn hàng</p>
+                    <p className="font-semibold">#{orderConfirmation.orderId}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Ngày đặt hàng</p>
+                    <p className="font-semibold">{formatDate(orderConfirmation.orderDate)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Ngày giao hàng dự kiến</p>
+                    <p className="font-semibold">
+                      {formatDate(orderConfirmation.estimatedDelivery)}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Ngày đặt hàng</p>
-                  <p className="font-semibold">{formatDate(orderConfirmation.orderDate)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Ngày giao hàng dự kiến</p>
-                  <p className="font-semibold">{formatDate(orderConfirmation.estimatedDelivery)}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          {/* Shipping Address */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-xl">Địa chỉ giao hàng</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <p className="font-semibold">{orderConfirmation.shippingAddress.recipientName}</p>
-                <p className="text-sm">{orderConfirmation.shippingAddress.phone}</p>
-                <p className="text-sm">{orderConfirmation.shippingAddress.email}</p>
-                <p className="text-sm">{orderConfirmation.shippingAddress.streetAddress}</p>
-                {orderConfirmation.shippingAddress.detailedAddress && (
-                  <p className="text-sm">{orderConfirmation.shippingAddress.detailedAddress}</p>
-                )}
-                <p className="text-sm">{orderConfirmation.shippingAddress.postalCode}, Việt Nam</p>
-                {orderConfirmation.shippingAddress.deliveryNotes && (
-                  <p className="text-sm italic">
-                    Ghi chú: {orderConfirmation.shippingAddress.deliveryNotes}
+            {/* Shipping Address */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl">Địa chỉ giao hàng</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <p className="font-semibold">{orderConfirmation.shippingAddress.recipientName}</p>
+                  <p className="text-sm">{orderConfirmation.shippingAddress.phone}</p>
+                  <p className="text-sm">{orderConfirmation.shippingAddress.email}</p>
+                  <p className="text-sm">{orderConfirmation.shippingAddress.streetAddress}</p>
+                  {orderConfirmation.shippingAddress.detailedAddress && (
+                    <p className="text-sm">{orderConfirmation.shippingAddress.detailedAddress}</p>
+                  )}
+                  <p className="text-sm">
+                    {orderConfirmation.shippingAddress.postalCode}, Việt Nam
                   </p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                  {orderConfirmation.shippingAddress.deliveryNotes && (
+                    <p className="text-sm italic">
+                      Ghi chú: {orderConfirmation.shippingAddress.deliveryNotes}
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
 
-          {/* Order Items */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-xl">Sản phẩm đã đặt</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {orderConfirmation.orderSummary.items.map((item, index) => (
-                  <div key={index} className="flex items-center justify-between border-b pb-4">
-                    <div className="flex-1">
-                      <h3 className="font-medium">{item.title}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Số lượng: {item.quantity} × {formatPrice(item.price)}
-                      </p>
+            {/* Order Items */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-xl">Sản phẩm đã đặt</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {orderConfirmation.orderSummary.items.map((item, index) => (
+                    <div key={index} className="flex items-center justify-between border-b pb-4">
+                      <div className="flex-1">
+                        <h3 className="text-destructive">{item.title}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Số lượng: {item.quantity} × {formatPrice(item.price)}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold">{formatPrice(item.total)}</p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-semibold">{formatPrice(item.total)}</p>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Order Summary */}
+          <div className="lg:col-span-1">
+            <Card className="sticky top-4">
+              <CardHeader>
+                <CardTitle className="text-xl">Tóm tắt đơn hàng</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span>Tạm tính</span>
+                    <span>{formatPrice(orderConfirmation.orderSummary.subtotal)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Phí vận chuyển</span>
+                    <span>{formatPrice(orderConfirmation.orderSummary.shippingFee)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Thuế (10%)</span>
+                    <span>{formatPrice(orderConfirmation.orderSummary.tax)}</span>
+                  </div>
+                  <div className="border-t pt-2">
+                    <div className="flex justify-between font-semibold text-lg">
+                      <span>Tổng cộng</span>
+                      <span className="text-success">
+                        {formatPrice(orderConfirmation.orderSummary.total)}
+                      </span>
                     </div>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+                </div>
 
-        {/* Order Summary */}
-        <div className="lg:col-span-1">
-          <Card className="sticky top-4">
-            <CardHeader>
-              <CardTitle className="text-xl">Tóm tắt đơn hàng</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span>Tạm tính</span>
-                  <span>{formatPrice(orderConfirmation.orderSummary.subtotal)}</span>
+                {/* Action Buttons */}
+                <div className="space-y-3 pt-4">
+                  <Button onClick={handleContinueShopping} className="w-full" variant="default">
+                    Tiếp tục mua sắm
+                  </Button>
                 </div>
-                <div className="flex justify-between">
-                  <span>Phí vận chuyển</span>
-                  <span>{formatPrice(orderConfirmation.orderSummary.shippingFee)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Thuế (10%)</span>
-                  <span>{formatPrice(orderConfirmation.orderSummary.tax)}</span>
-                </div>
-                <div className="border-t pt-2">
-                  <div className="flex justify-between font-semibold text-lg">
-                    <span>Tổng cộng</span>
-                    <span className="text-success">
-                      {formatPrice(orderConfirmation.orderSummary.total)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="space-y-3 pt-4">
-                <Button onClick={handleContinueShopping} className="w-full" variant="default">
-                  Tiếp tục mua sắm
-                </Button>
-                <Button onClick={handleTrackOrder} className="w-full" variant="outline">
-                  Theo dõi đơn hàng
-                </Button>
-                <Button onClick={handlePrintReceipt} className="w-full" variant="secondary">
-                  In hóa đơn
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 };
 
