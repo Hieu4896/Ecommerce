@@ -25,13 +25,26 @@ const OrderConfirmationContent: React.FC = () => {
 
   // Kiểm tra quyền truy cập và thiết lập timer xóa dữ liệu
   useEffect(() => {
+    // Chỉ xử lý khi có urlOrderId
     if (!urlOrderId) {
-      setIsLoading(false);
-      return;
+      // Đợi một chút trước khi hiển thị lỗi để tránh chớp tắt
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+
+    // Nếu chưa có orderConfirmation, đợi một chút để load
+    if (!orderConfirmation) {
+      // Đợi một chút để orderConfirmation load xong
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
+      return () => clearTimeout(timer);
     }
 
     // Kiểm tra xem orderConfirmation có tồn tại, orderId có khớp không và có hết hạn không
-    if (orderConfirmation && orderConfirmation.orderId === urlOrderId && !isOrderExpired()) {
+    if (orderConfirmation.orderId === urlOrderId && !isOrderExpired()) {
       setIsAuthorized(true);
       setIsLoading(false);
 
@@ -47,10 +60,14 @@ const OrderConfirmationContent: React.FC = () => {
       return () => clearTimeout(timer);
     } else {
       // Nếu order đã hết hạn, xóa dữ liệu
-      if (orderConfirmation && isOrderExpired()) {
+      if (isOrderExpired()) {
         clearOrderConfirmation();
       }
-      setIsLoading(false);
+      // Đợi một chút trước khi hiển thị lỗi để tránh chớp tắt
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 300);
+      return () => clearTimeout(timer);
     }
   }, [urlOrderId, orderConfirmation, clearOrderConfirmation, isOrderExpired]);
 

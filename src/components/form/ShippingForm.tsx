@@ -3,10 +3,27 @@ import { useFormContext } from "react-hook-form";
 import { FormField } from "./FormField";
 
 /**
+ * Props cho ShippingForm component
+ */
+interface ShippingFormProps {
+  onFieldChange?: (
+    fieldName:
+      | "recipientName"
+      | "phone"
+      | "email"
+      | "postalCode"
+      | "streetAddress"
+      | "detailedAddress"
+      | "deliveryNotes",
+    value: string,
+  ) => void;
+}
+
+/**
  * Component ShippingForm - Form thông tin giao hàng
  * Sử dụng useFormContext để kết nối với form cha
  */
-export const ShippingForm: React.FC = () => {
+export const ShippingForm: React.FC<ShippingFormProps> = ({ onFieldChange }) => {
   const {
     setValue,
     watch,
@@ -32,7 +49,10 @@ export const ShippingForm: React.FC = () => {
             id="recipientName"
             label="Tên người nhận"
             value={recipientName}
-            onChange={(e) => setValue("recipientName", e.target.value)}
+            onChange={(e) => {
+              setValue("recipientName", e.target.value);
+              onFieldChange?.("recipientName", e.target.value);
+            }}
             error={errors.recipientName?.message as string}
             placeholder="Nhập tên người nhận"
             required
@@ -43,7 +63,10 @@ export const ShippingForm: React.FC = () => {
             label="Số điện thoại"
             type="tel"
             value={phone}
-            onChange={(e) => setValue("phone", e.target.value)}
+            onChange={(e) => {
+              setValue("phone", e.target.value);
+              onFieldChange?.("phone", e.target.value);
+            }}
             error={errors.phone?.message as string}
             placeholder="Nhập số điện thoại"
             required
@@ -54,7 +77,10 @@ export const ShippingForm: React.FC = () => {
             label="Email"
             type="email"
             value={email}
-            onChange={(e) => setValue("email", e.target.value)}
+            onChange={(e) => {
+              setValue("email", e.target.value);
+              onFieldChange?.("email", e.target.value);
+            }}
             error={errors.email?.message as string}
             placeholder="Nhập email"
             required
@@ -64,7 +90,10 @@ export const ShippingForm: React.FC = () => {
             id="postalCode"
             label="Mã bưu chính"
             value={postalCode}
-            onChange={(e) => setValue("postalCode", e.target.value)}
+            onChange={(e) => {
+              setValue("postalCode", e.target.value);
+              onFieldChange?.("postalCode", e.target.value);
+            }}
             error={errors.postalCode?.message as string}
             placeholder="Nhập mã bưu chính"
             required
@@ -75,7 +104,10 @@ export const ShippingForm: React.FC = () => {
           id="streetAddress"
           label="Địa chỉ giao hàng"
           value={streetAddress}
-          onChange={(e) => setValue("streetAddress", e.target.value)}
+          onChange={(e) => {
+            setValue("streetAddress", e.target.value);
+            onFieldChange?.("streetAddress", e.target.value);
+          }}
           error={errors.streetAddress?.message as string}
           placeholder="Nhập địa chỉ giao hàng"
           required
@@ -85,7 +117,10 @@ export const ShippingForm: React.FC = () => {
           id="detailedAddress"
           label="Địa chỉ chi tiết"
           value={detailedAddress}
-          onChange={(e) => setValue("detailedAddress", e.target.value)}
+          onChange={(e) => {
+            setValue("detailedAddress", e.target.value);
+            onFieldChange?.("detailedAddress", e.target.value);
+          }}
           placeholder="Số nhà, tên đường, tòa nhà, etc."
         />
 
@@ -93,7 +128,10 @@ export const ShippingForm: React.FC = () => {
           id="deliveryNotes"
           label="Ghi chú giao hàng"
           value={deliveryNotes}
-          onChange={(e) => setValue("deliveryNotes", e.target.value)}
+          onChange={(e) => {
+            setValue("deliveryNotes", e.target.value);
+            onFieldChange?.("deliveryNotes", e.target.value);
+          }}
           rows={3}
           placeholder="Ghi chú đặc biệt cho giao hàng (thời gian, hướng dẫn, etc.)"
         />

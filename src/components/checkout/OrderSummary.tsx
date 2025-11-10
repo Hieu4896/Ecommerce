@@ -24,14 +24,13 @@ const renderItem = (label: string, value: string | number) => {
   );
 };
 export const OrderSummary = ({ cart, handleClearCart, handleCheckout }: OrderSummaryProps) => {
-  const ChildTrigger = () => {
-    return (
-      <Button variant="outline" className="w-full">
-        <Trash2 className="h-4 w-4 mr-2" />
-        Xóa giỏ hàng
-      </Button>
-    );
-  };
+  const childTrigger = (
+    <Button variant="outline" className="w-full">
+      <Trash2 className="h-4 w-4 mr-2" />
+      Xóa giỏ hàng
+    </Button>
+  );
+
   return (
     <>
       <Card className="w-full sticky top-4 bg-primary-foreground">
@@ -60,7 +59,7 @@ export const OrderSummary = ({ cart, handleClearCart, handleCheckout }: OrderSum
             </Button>
 
             <CartDeletedConfirmation
-              ChildTrigger={<ChildTrigger />}
+              childTrigger={childTrigger}
               handleClearCart={handleClearCart}
             />
           </div>

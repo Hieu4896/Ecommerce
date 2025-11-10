@@ -1,13 +1,23 @@
 import React from "react";
 import { useFormContext } from "react-hook-form";
 import { FormField } from "./FormField";
-import { formatCardNumber, formatExpiryDate } from "@utils/format.util";
+import { formatCardNumber, formatExpiryDate } from "@src/utils/format.util";
+
+/**
+ * Props cho PaymentForm component
+ */
+interface PaymentFormProps {
+  onFieldChange?: (
+    fieldName: "paymentMethod" | "cardNumber" | "cardExpiry" | "cardCVV",
+    value: string,
+  ) => void;
+}
 
 /**
  * Component PaymentForm - Form thông tin thanh toán
  * Sử dụng useFormContext để kết nối với form cha
  */
-export const PaymentForm: React.FC = () => {
+export const PaymentForm: React.FC<PaymentFormProps> = ({ onFieldChange }) => {
   const {
     setValue,
     watch,
@@ -40,18 +50,24 @@ export const PaymentForm: React.FC = () => {
   const handleCardNumberChange = (value: string) => {
     const formatted = formatCardNumber(value);
     setValue("cardNumber", formatted);
+    // Gọi onFieldChange với giá trị đã format
+    onFieldChange?.("cardNumber", formatted);
   };
 
   // Xử lý thay đổi expiry date với auto-format
   const handleExpiryDateChange = (value: string) => {
     const formatted = formatExpiryDate(value);
     setValue("cardExpiry", formatted);
+    // Gọi onFieldChange với giá trị đã format
+    onFieldChange?.("cardExpiry", formatted);
   };
 
   // Xử lý thay đổi CVV (chỉ cho phép nhập số)
   const handleCVVChange = (value: string) => {
     const numericValue = value.replace(/\D/g, "").substring(0, 3);
     setValue("cardCVV", numericValue);
+    // Gọi onFieldChange với giá trị đã format
+    onFieldChange?.("cardCVV", numericValue);
   };
 
   return (
@@ -64,7 +80,10 @@ export const PaymentForm: React.FC = () => {
         label="Phương thức thanh toán"
         name="paymentMethod"
         value={paymentMethod}
-        onChange={(e) => handlePaymentMethodChange(e.target.value as "card" | "bank" | "cash")}
+        onChange={(e) => {
+          handlePaymentMethodChange(e.target.value as "card" | "bank" | "cash");
+          onFieldChange?.("paymentMethod", e.target.value);
+        }}
         error={errors.paymentMethod?.message as string}
         required
         options={[
@@ -81,7 +100,9 @@ export const PaymentForm: React.FC = () => {
             id="cardNumber"
             label="Số thẻ"
             value={cardNumber}
-            onChange={(e) => handleCardNumberChange(e.target.value)}
+            onChange={(e) => {
+              handleCardNumberChange(e.target.value);
+            }}
             error={errors.cardNumber?.message as string}
             placeholder="1234-5678-9012-3456"
             maxLength={19}
@@ -93,7 +114,9 @@ export const PaymentForm: React.FC = () => {
               id="cardExpiry"
               label="Ngày hết hạn"
               value={cardExpiry}
-              onChange={(e) => handleExpiryDateChange(e.target.value)}
+              onChange={(e) => {
+                handleExpiryDateChange(e.target.value);
+              }}
               error={errors.cardExpiry?.message as string}
               placeholder="MM/YY"
               maxLength={5}
@@ -104,7 +127,9 @@ export const PaymentForm: React.FC = () => {
               id="cardCVV"
               label="CVV"
               value={cardCVV}
-              onChange={(e) => handleCVVChange(e.target.value)}
+              onChange={(e) => {
+                handleCVVChange(e.target.value);
+              }}
               error={errors.cardCVV?.message as string}
               placeholder="123"
               maxLength={3}

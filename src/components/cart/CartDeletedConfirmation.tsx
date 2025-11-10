@@ -11,28 +11,27 @@ import {
 } from "@components/alert-dialog";
 
 interface CartDeletedConfirmationProps {
-  ChildTrigger: React.ReactNode;
+  childTrigger: React.ReactNode;
   handleClearCart: () => void;
 }
 
 export function CartDeletedConfirmation({
-  ChildTrigger,
+  childTrigger,
   handleClearCart,
 }: CartDeletedConfirmationProps) {
   return (
     <AlertDialog>
-      <AlertDialogTrigger asChild>{ChildTrigger}</AlertDialogTrigger>
-      <AlertDialogContent className="mobile:max-w-[90%]! laptop:max-w-[70%]!">
+      <AlertDialogTrigger asChild>{childTrigger}</AlertDialogTrigger>
+      <AlertDialogContent className="mobile:max-w-[90%] tablet:max-w-[40%]! laptop:max-w-[30%]!">
         <AlertDialogHeader>
-          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-          <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete your account and remove your
-            data from our servers.
-          </AlertDialogDescription>
+          <AlertDialogTitle className="text-primary">Bạn muốn xóa giỏ hàng?</AlertDialogTitle>
+          <AlertDialogDescription>Giỏ hàng sẽ bị xóa tất cả dữ liệu.</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={handleClearCart}>Continue</AlertDialogAction>
+          <AlertDialogCancel className="flex-1">Hủy</AlertDialogCancel>
+          <AlertDialogAction className="flex-1" onClick={handleClearCart}>
+            Xác nhận
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

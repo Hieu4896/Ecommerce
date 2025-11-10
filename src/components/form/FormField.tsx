@@ -46,8 +46,8 @@ export const FormField: React.FC<FormFieldProps> = ({
   options,
   name,
 }) => {
-  const baseClassName = `w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary ${
-    error ? "border-red-500" : "border-gray-300"
+  const baseClassName = `w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-colors ${
+    error ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-primary"
   } ${className}`;
 
   // Render radio buttons nếu có options
@@ -73,7 +73,7 @@ export const FormField: React.FC<FormFieldProps> = ({
             </Label>
           ))}
         </div>
-        {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
+        {error && <p className="mt-1 text-sm text-red-500 font-medium animate-fade-in">{error}</p>}
       </div>
     );
   }
@@ -107,7 +107,7 @@ export const FormField: React.FC<FormFieldProps> = ({
           onBlur={onBlur}
         />
       )}
-      {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
+      {error && <p className="mt-1 text-sm text-red-500 font-medium animate-fade-in">{error}</p>}
     </div>
   );
 };

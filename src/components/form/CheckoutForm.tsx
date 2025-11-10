@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, FormProvider } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -18,9 +18,11 @@ import { EmptyCart } from "../cart/EmptyCart";
  */
 const CheckoutForm: React.FC = () => {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
 
   // Lấy state và actions từ stores
-  const { isProcessing, error, setOrderSummary, processCheckout } = useCheckoutStore();
+  const { isProcessing, error, setOrderSummary, processCheckout, resetCheckout } =
+    useCheckoutStore();
 
   const { cart } = useCart();
 
@@ -40,10 +42,15 @@ const CheckoutForm: React.FC = () => {
       cardExpiry: "",
       cardCVV: "",
     },
-    mode: "onBlur",
+    mode: "onChange", // Thay đổi thành onChange để realtime validation
   });
 
-  const { handleSubmit, reset } = methods;
+  const {
+    handleSubmit,
+    clearErrors,
+    trigger,
+    formState: { errors },
+  } = methods;
 
   // Lưu orderSummary từ cart khi cart thay đổi
   useEffect(() => {
@@ -53,6 +60,8 @@ const CheckoutForm: React.FC = () => {
         formData: null,
       });
     }
+    // Set loading thành false khi cart đã load xong
+    setIsLoading(false);
   }, [cart, setOrderSummary]);
 
   // Xử lý submit form
@@ -99,10 +108,85 @@ const CheckoutForm: React.FC = () => {
     }
   };
 
-  // Reset form
-  const handleReset = () => {
-    reset();
+  // Xử lý khi người dùng bấm nút Đặt hàng
+  const handlePlaceOrder = async () => {
+    // Trigger validation cho tất cả các field
+    const isFormValid = await trigger();
+
+    if (isFormValid) {
+      // Nếu form hợp lệ, submit form
+      handleSubmit(onSubmit)();
+    }
+    // Nếu form không hợp lệ, errors sẽ được hiển thị tại từng FormField
   };
+
+  // Reset form và clear tất cả state khi bấm nút hủy
+  const handleReset = () => {
+    // Clear checkout store state
+    resetCheckout();
+
+    // Chuyển hướng về trang cart
+    router.push("/cart");
+  };
+
+  // Xử lý khi người dùng thay đổi giá trị của một field
+  const handleFieldChange = (
+    fieldName:
+      | "recipientName"
+      | "phone"
+      | "email"
+      | "postalCode"
+      | "streetAddress"
+      | "detailedAddress"
+      | "deliveryNotes"
+      | "paymentMethod"
+      | "cardNumber"
+      | "cardExpiry"
+      | "cardCVV",
+    value: string,
+  ) => {
+    // Cập nhật giá trị field
+    methods.setValue(fieldName, value);
+
+    // Nếu field có error và người dùng đã nhập giá trị, clear error của field đó
+    if (errors[fieldName] && value.trim() !== "") {
+      clearErrors(fieldName);
+    }
+  };
+
+  // Xử lý khi người dùng thay đổi giá trị của shipping field
+  const handleShippingFieldChange = (
+    fieldName:
+      | "recipientName"
+      | "phone"
+      | "email"
+      | "postalCode"
+      | "streetAddress"
+      | "detailedAddress"
+      | "deliveryNotes",
+    value: string,
+  ) => {
+    handleFieldChange(fieldName, value);
+  };
+
+  // Xử lý khi người dùng thay đổi giá trị của payment field
+  const handlePaymentFieldChange = (
+    fieldName: "paymentMethod" | "cardNumber" | "cardExpiry" | "cardCVV",
+    value: string,
+  ) => {
+    handleFieldChange(fieldName, value);
+  };
+
+  // Hiển thị loading khi cart đang được tải
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex justify-center items-center min-h-[400px]">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    );
+  }
 
   // Nếu không có sản phẩm trong giỏ hàng, hiển thị thông báo
   if (!cart || cart.products.length === 0) {
@@ -119,12 +203,12 @@ const CheckoutForm: React.FC = () => {
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Shipping Form */}
-          <ShippingForm />
+          <ShippingForm onFieldChange={handleShippingFieldChange} />
 
           {/* Payment Form */}
-          <PaymentForm />
+          <PaymentForm onFieldChange={handlePaymentFieldChange} />
 
-          {/* Error Message */}
+          {/* Error Message từ store */}
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
               {error}
@@ -142,7 +226,8 @@ const CheckoutForm: React.FC = () => {
             </Button>
             <Button
               variant="default"
-              type="submit"
+              type="button"
+              onClick={handlePlaceOrder}
               disabled={isProcessing}
               className={`px-6 py-2 rounded-md text-white transition-colors ${
                 isProcessing ? "bg-gray-400 cursor-not-allowed" : "bg-primary hover:bg-primary/90"
